@@ -1,0 +1,26 @@
+{
+    "id": "264ECC01",
+    "path": "C:/Users/ADM/Dropbox/PC/Desktop/Scipts by_Silmara/Projeto_boletim_arbovirose/boletim_arbovirose.R",
+    "project_path": "boletim_arbovirose.R",
+    "type": "r_source",
+    "hash": "3296649894",
+    "contents": "",
+    "dirty": false,
+    "created": 1650893929118.0,
+    "source_on_save": false,
+    "relative_order": 2,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "169,0",
+        "scrollLine": "150"
+    },
+    "folds": "12|49|45|0|\n46|54|73|0|\n74|47|95|0|\n96|67|138|63|\n178|50|717|8|\n",
+    "lastKnownWriteTime": 1651536584,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1651536584534,
+    "read_only": false,
+    "read_only_alternatives": []
+}
