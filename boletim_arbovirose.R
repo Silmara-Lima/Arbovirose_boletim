@@ -117,7 +117,7 @@ data_chik <- filter(data_chik, data_chik$DT_SIN_PRI > "2015-12-31")
 data_zika <- filter(data_zika, data_zika$DT_SIN_PRI > "2015-12-31")
 
 #filtrar registros válidos para 2022 contando da semana epidemiológica
-data_dengue <- filter(data_dengue, data_dengue$DT_SIN_PRI > "2022-01-01")
+data_dengue <- filter(data_dengue, data_dengue$DT_SIN_PRI > "2006-12-31")
 
 #dengue
 #grupo1 (confirmados)
@@ -138,41 +138,89 @@ data_dengue_confirmados <- bind_rows(data_dengue_pcr,
                                      data_dengue_outros_positivos,
                                      data_dengue_clin_epidemio)
 ############################ REGRA DOS 90 DIAS PARA OS CONFIMRADOS #############
-#regra de 90 dias para dengue
-#dentro do mesmo ano epidemiológico, se o id_pessoa for o mesmo, o registro a ser
-#contado será o de DT_SIN_PRI mais antigo e depois de 90 dias
+#regra de 90 dias para data_dengue_confirmados
+#mesmo id_pessoa só pode ter 4 tipos de dengue ao longo da vida
 DT_dengue_90_dias <- arrange(data_dengue_confirmados, data_dengue_confirmados$NM_PACIENT)
+DT_dengue_90_dias <- subset(data_dengue_confirmados, select = c("NU_NOTIFIC", "DT_SIN_PRI","id_pessoa_dengue"))
+DT_dengue_90_dias <- arrange(DT_dengue_90_dias, DT_dengue_90_dias$id_pessoa_dengue) 
+#base para usar o left join
+DT_90_dias_dengue <- DT_dengue_90_dias
+#remover duplicados de IS + id_pessoa
+DT_dengue_90_dias <- DT_dengue_90_dias[!duplicated(t(apply(DT_dengue_90_dias[, c("DT_SIN_PRI" , "id_pessoa_dengue")], 1, sort))), ]
+#verificar frequências
+DT_dengue_90_dias <- table(DT_dengue_90_dias$id_pessoa_dengue)
+DT_dengue_90_dias <- data.frame(DT_dengue_90_dias)
+DT_dengue_90_dias <- rename(DT_dengue_90_dias, id_pessoa_dengue = Var1)
+#adicionar as colunas de d1
+DT_dengue_90_dias <- left_join(DT_90_dias_dengue, DT_dengue_90_dias, by = "id_pessoa_dengue")
+#remover duplicados de IS + id_pessoa
+DT_dengue_90_dias <- DT_dengue_90_dias[!duplicated(t(apply(DT_dengue_90_dias[, c("DT_SIN_PRI" , "id_pessoa_dengue")], 1, sort))), ]
 
-#preciso pegar somente os duplicados e aplicar a regra
-d1 <- subset(data_dengue_confirmados, select = c("NU_NOTIFIC", "DT_SIN_PRI","id_pessoa_dengue"))
-d1 <- arrange(d1, d1$id_pessoa_dengue)  
+#filtrar quem tem um registro ou 2 ou mais registros
+#ao final juntar o de frequência 1 + data após aplicar regra dos 90
+DT_dengue_90_dias_igual1 <- filter(DT_dengue_90_dias, DT_dengue_90_dias$Freq < 2)
+DT_dengue_90_dias_maior2 <- filter(DT_dengue_90_dias, DT_dengue_90_dias$Freq >= 2)
 
-#testando **lembrar de pegar somente confirmado
-#vê quando IS for nulo**
+#2 ou mais registros aplicando a regra dos 90 dias
+DT_dengue_pos_90_dias <- DT_dengue_90_dias_maior2 %>% 
+  dplyr::left_join(.,
+                   DT_dengue_90_dias_maior2 %>% 
+                     dplyr::group_by(id_pessoa_dengue) %>% 
+                     dplyr::summarise(dt_primeiro_sintoma = min (DT_SIN_PRI)) %>% 
+                     dplyr::ungroup(.),
+                   by = c("id_pessoa_dengue"="id_pessoa_dengue")) %>% 
+  dplyr::mutate(diferenca = DT_SIN_PRI - dt_primeiro_sintoma,
+                check = dplyr::if_else(diferenca == 0, "True", "False"),
+                check1 = dplyr::if_else(diferenca >= 90, "True", "False"))
 
-d2 <- d1
-d3 <- table(d2$id_pessoa_dengue)
-d3 <- data.frame(d3)
-d3 <- rename(d3, id_pessoa_dengue = Var1)
-d4 <- left_join(d2, d3, by = "id_pessoa_dengue")
-d4 <- filter(d4, d4$Freq >= 2)
+DT_dengue_pos_90_dias <- DT_dengue_pos_90_dias %>% 
+  filter(DT_dengue_pos_90_dias$check == "True" | DT_dengue_pos_90_dias$check1 == "True")
 
-d4 <- arrange(d4, d4$id_pessoa_dengue, d4$DT_SIN_PRI)
-#o by deve ser aqui pra depois fazer a diferença
-
-d4 <- d4 %>% mutate(diff =  d4$DT_SIN_PRI - lag (d4$DT_SIN_PRI)) #falta especificar o by
-d4 <- rename(d4, nu_dias = diff)
-d4$nu_dias[is.na(d4$nu_dias)] <- 0
-
-#lembrar de retirar (mesmo id_pessoa e dt_sin_pri)
-d4 <- d4 %>% group_split(d4$id_pessoa_dengue)
+#unir os dados após aplicação da regra dos 90 dias
+DT_90_dengue_maior2 <- subset(DT_dengue_pos_90_dias, 
+                                  select = -c(NU_NOTIFIC,
+                                              DT_SIN_PRI,
+                                              id_pessoa_dengue,
+                                              Freq))
+data_dengue_pos_90_dias <- bind_rows(DT_dengue_90_dias_igual1, DT_90_dengue_maior2)
 
 
+data_dengue_pos_90_dias <- subset(data_dengue_pos_90_dias, 
+                                     select = -c(Freq,
+                                                 dt_primeiro_sintoma,
+                                                 diferenca,
+                                                 check,
+                                                 check1))
+#criação de chave para leftjoin
+id_pessoa_left <- paste(data_dengue_pos_90_dias$NU_NOTIFIC,
+                         data_dengue_pos_90_dias$DT_SIN_PRI,
+                         data_dengue_pos_90_dias$id_pessoa_dengue)
+
+id_pessoa_left <- data.frame(id_pessoa_left)
+data_dengue_pos_90_dias <- mutate(data_dengue_pos_90_dias, id_pessoa_left)
+
+id_pessoa_left1 <- paste(data_dengue_confirmados$NU_NOTIFIC,
+                    data_dengue_confirmados$DT_SIN_PRI,
+                    data_dengue_confirmados$id_pessoa_dengue)
+id_pessoa_left1 <- data.frame(id_pessoa_left1) 
+
+data_dengue_confirmados <- mutate(data_dengue_confirmados, id_pessoa_left1)
+data_dengue_confirmados <- data_dengue_confirmados %>% 
+  rename(id_pessoa_left = id_pessoa_left1)
 
 
-d4 <- aggregate(d4$DT_SIN_PRI,
-                by = list(d4$id_pessoa_dengue),
-                FUN = diff) ### pode estar no caminho
+data_dengue_confirmados_final <- left_join(data_dengue_pos_90_dias, data_dengue_confirmados,
+                                           by = "id_pessoa_left")
+  
+
+ 
+#remover duplicados de IS + id_pessoa
+
+
+
+ ###3227 é a qtd de confirmados dengue                                            
+
+
 
 
 
