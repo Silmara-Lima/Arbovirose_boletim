@@ -4,9 +4,10 @@ library("tidyverse")
 library("foreign")
 library("writexl")
 library("dplyr")
-library("rio")
+library("readxl")
 library("base")
 library("purrr")
+library("RPostgreSQL")
 
 #posteriormente, verificar contagem por semana epidemiológica
 
@@ -378,7 +379,7 @@ data_chik_confirmados <- rename(data_chik_confirmados, marcador = X.confirmados.
 #grupo2 descartados_chik (exame negativo e sem clínico epidemiológico)
 data_chik_descartados <- filter(data_chik, data_chik$CLASSI_FIN == "5")
 
-data_chik_descartados <- data_chik_confirmados[!duplicated(t(apply(data_chik_confirmados[, c("DT_SIN_PRI" , "id_pessoa_chik")], 1, sort))), ]
+data_chik_descartados <- data_chik_descartados[!duplicated(t(apply(data_chik_descartados[, c("DT_SIN_PRI" , "id_pessoa_chik")], 1, sort))), ]
 data_chik_descartados <- subset(data_chik_descartados, 
                                 select = -c(NU_NOTIFIC,
                                             ID_REGIONA,
@@ -609,6 +610,7 @@ data_arbo <- bind_rows (data_dengue_confirmados,
 ##saidas 
 write.csv(data_arbo, "data_arbo.csv", row.names = FALSE)
 write.csv(data_dengue_menor_2007, "dengue_menor_2007.csv", row.names = FALSE)
-write.csv(data_chik_menor_2007, "chik_menor_2007.csv", row.names = FALSE)
+write.csv(data_chik_menor_2016, "chik_menor_2016.csv", row.names = FALSE)
 write.csv(data_zika_menor_2016, "zika_menor_2016.csv", row.names = FALSE)
+
 #############FIM
