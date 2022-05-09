@@ -7,10 +7,9 @@ library("dplyr")
 library("readxl")
 library("base")
 library("purrr")
-library("RPostgreSQL")
+library("rio")
 
 #posteriormente, verificar contagem por semana epidemiológica
-
 ############### DESCOMPACTAR ARQUIVOS ARBOVIROSE ###############################
 #abrir arquivos dengue
 getwd()
@@ -73,6 +72,218 @@ data_chik$RESUL_PCR_ <- as.numeric(levels(data_chik$RESUL_PCR_))[data_chik$RESUL
 data_dengue$DT_SIN_PRI <- as.Date(data_dengue$DT_SIN_PRI, format="%d-%m-%Y")
 data_dengue$DT_NASC <- as.Date(data_dengue$DT_NASC, format="%d-%m-%Y")
 
+############################### RENOMEAR MUNICÍPIOS ############################
+#renomear código de município
+cod_ibge <- c("250010", "250020", "250030", "250040", "250050", "250053",
+              "250057", "250060", "250073", "250077", "250080", "250090",
+              "250100", "250110", "250115", "250120", "250130", "250135",
+              "250140", "250150", "250153", "250160", "250157", "250170",
+              "250180", "250190", "250200", "250205", "250210", "250215",
+              "250220", "250230", "250240", "250250", "250270", "250280",
+              "250290", "250300", "250310", "250320", "250330", "250340",
+              "250350", "250355", "250360", "250370", "250375", "250380",
+              "250390", "250400", "250403", "250407", "250410", "250415",
+              "250420", "250430", "250435", "250440", "250450", "250460",
+              "250470", "250480", "250485", "250490", "250500", "250510",
+              "250523", "250520", "250527", "250530", "250535", "250540",
+              "250560", "250570", "250580", "250590", "250600", "250610",
+              "250620", "250625", "250630", "250640", "250650", "250660",
+              "250260", "250670", "250680", "250690", "250700", "250710",
+              "250720", "250730", "250740", "250750", "251365", "250760",
+              "250770", "250780", "250790", "250800", "250810", "250820",
+              "250830", "250840", "250850", "250855", "250860", "250870",
+              "250880", "250890", "250900", "250905", "250910", "250915",
+              "250920", "250930", "250933", "250937", "250939", "250940",
+              "250950", "250960", "250970", "250980", "250990", "251000",
+              "251010", "251020", "251030", "251040", "251050", "251060",
+              "251065", "251070", "251080", "251090", "251100", "251110",
+              "251120", "251272", "251130", "251140", "251150", "251160",
+              "251170", "251180", "251190", "251200", "251203", "251207",
+              "251210", "251220", "251230", "251240", "251250", "251260",
+              "251270", "251274", "251275", "251276", "251278", "251280",
+              "251290", "251300", "251310", "251315", "251320", "251330",
+              "251335", "251340", "251370", "251380", "251350", "251360",
+              "251385", "251392", "251390", "251396", "251394", "251398",
+              "251400", "250070", "251410", "251420", "251430", "251440",
+              "251450", "251455", "251460", "251465", "251470", "251480",
+              "251445", "251490", "251500", "251510", "251520", "251540",
+              "251530", "251550", "251560", "251570", "251580", "251590",
+              "251593", "251597", "251600", "251610", "251615", "251620",
+              "251630", "251640", "251650", "251660", "251670", "251675",
+              "251680", "251690", "251700", "251710", "251720", "250550",
+              "251740")
+
+cod_ibge <- data.frame(cod_ibge)
+nm_municipios_PB <- c("Água Branca", "Aguiar", "Alagoa Grande", "Alagoa Nova",
+                      "Alagoinha", "Alcantil","Algodão de Jandaíra", "Alhandra",
+                      "Amparo", "Aparecida", "Araçagi", "Arara", "Araruna",
+                      "Areia", "Areia de Baraúnas", "Areial", "Aroeiras",
+                      "Assunção", "Baía da Traição", "Bananeiras", "Baraúna",
+                      "Barra de Santa Rosa", "Barra de Santana", 
+                      "Barra de São Miguel", "Bayeux", "Belém",
+                      "Belém do Brejo do Cruz", "Bernardino Batista",
+                      "Boa Ventura", "Boa Vista", "Bom Jesus", "Bom Sucesso",
+                      "Bonito de Santa Fé", "Boqueirão", "Borborema",
+                      "Brejo do Cruz", "Brejo dos Santos", "Caaporã",
+                      "Cabaceiras", "Cabedelo", "Cachoeira dos Índios",
+                      "Cacimba de Areia", "Cacimba de Dentro", "Cacimbas",
+                      "Caiçara", "Cajazeiras", "Cajazeirinhas", "Caldas Brandão",
+                      "Camalaú", "Campina Grande", "Capim", "Caraúbas",
+                      "Carrapateira", "Casserengue", "Catingueira",
+                      "Catolé do Rocha", "Caturité", "Conceição", "Condado",
+                      "Conde", "Congo", "Coremas", "Coxixola", 
+                      "Cruz do Espírito Santo", "Cubati", "Cuité",
+                      "Cuité de Mamanguape", "Cuitegi", "Curral de Cima",
+                      "Curral Velho", "Damião", "Desterro", "Diamante",
+                      "Dona Inês", "Duas Estradas", "Emas", "Esperança",
+                      "Fagundes", "Frei Martinho", "Gado Bravo", "Guarabira",
+                      "Gurinhém", "Gurjão", "Ibiara", "Igaracy", "Imaculada",
+                      "Ingá", "Itabaiana", "Itaporanga", "Itapororoca",
+                      "Itatuba", "Jacaraú", "Jericó", "João Pessoa",
+                      "Joca Claudino", "Juarez Távora", "Juazeirinho",
+                      "Junco do Seridó", "Juripiranga", "Juru", "Lagoa",
+                      "Lagoa de Dentro", "Lagoa Seca", "Lastro", "Livramento",
+                      "Logradouro", "Lucena", "Mãe d'Água", "Malta",
+                      "Mamanguape", "Manaíra", "Marcação", "Mari", 
+                      "Marizópolis", "Massaranduba", "Mataraca", "Matinhas",
+                      "Mato Grosso", "Maturéia", "Mogeiro", "Montadas",
+                      "Monte Horebe", "Monteiro", "Mulungu", "Natuba",
+                      "Nazarezinho", "Nova Floresta", "Nova Olinda",
+                      "Nova Palmeira", "Olho d'Água", "Olivedos", "Ouro Velho",
+                      "Parari", "Passagem", "Patos", "Paulista", "Pedra Branca",
+                      "Pedra Lavrada", "Pedras de Fogo", "Pedro Régis",
+                      "Piancó", "Picuí", "Pilar", "Pilões","Pilõezinhos",
+                      "Pirpirituba", "Pitimbu", "Pocinhos","Poço Dantas",
+                      "Poço de José de Moura", "Pombal", "Prata",
+                      "Princesa Isabel", "Puxinanã", "Queimadas", "Quixabá",
+                      "Remígio", "Riachão", "Riachão do Bacamarte",
+                      "Riachão do Poço", "Riacho de Santo Antônio",
+                      "Riacho dos Cavalos", "Rio Tinto", "Salgadinho",
+                      "Salgado de São Félix", "Santa Cecília", "Santa Cruz",
+                      "Santa Helena", "Santa Inês", "Santa Luzia",
+                      "Santa Rita", "Santa Teresinha", "Santana de Mangueira",
+                      "Santana dos Garrotes", "Santo André", "São Bentinho",
+                      "São Bento", "São Domingos", "São Domingos do Cariri",
+                      "São Francisco", "São João do Cariri",
+                      "São João do Rio do Peixe", "São João do Tigre",
+                      "São José da Lagoa Tapada", "São José de Caiana",
+                      "São José de Espinharas", "São José de Piranhas",
+                      "São José de Princesa", "São José do Bonfim",
+                      "São José do Brejo do Cruz", "São José do Sabugi",
+                      "São José dos Cordeiros", "São José dos Ramos",
+                      "São Mamede", "São Miguel de Taipu",
+                      "São Sebastião de Lagoa de Roça","São Sebastião do Umbuzeiro",
+                      "São Vicente do Seridó", "Sapé", "Serra Branca",
+                      "Serra da Raiz", "Serra Grande", "Serra Redonda",
+                      "Serraria", "Sertãozinho","Sobrado", "Solânea",
+                      "Soledade", "Sossêgo", "Sousa", "Sumé", "Tacima",
+                      "Taperoá", "Tavares", "Teixeira", "Tenório", "Triunfo",
+                      "Uiraúna", "Umbuzeiro", "Várzea", "Vieirópolis",
+                      "Vista Serrana", "Zabelê")
+
+nm_municipios_PB <- data.frame(nm_municipios_PB)
+municipios_PB <- c(cod_ibge, nm_municipios_PB) 
+municipios_PB <- data.frame(municipios_PB)
+
+#acrescentar RS
+Região_de_Saúde <- c("11",	"7",	"3",	"3",	"2",	"15",	"3",	"1",	"5",	"10",	"2",	"3",
+                     "2",	"3",	"6",	"3",	"15",	"16",	"14",	"2",	"4",	"4",	"15",	"15",	
+                     "1",	"2",	"8",	"9",	"7",	"16",	"9",	"8",	"9",	"15",	"2",	"8",	
+                     "8",	"1",	"15",	"1",	"9",	"6",	"2",	"6",	"2",	"9",	"13",	"12",	
+                     "5",	"16",	"14",	"5",	"9",	"2",	"6",	"8",	"15",	"7",	"6",	"1",	
+                     "5",	"7",	"5",	"1",	"4",	"4",	"14",	"2",	"14",	"7",	"4",	"6",
+                     "7",	"2",	"2",	"6",	"3",	"16",	"4",	"15",	"2",	"12",	"5",	"7",	
+                     "7",	"11",	"12",	"12",	"7",	"14",	"12",	"14",	"8",	"1",	"9",	"12",	
+                     "16",	"6",	"12",	"11",	"13",	"2",	"3",	"10",	"5",	"2",	"1",	"6",
+                     "6",	"14",	"11",	"14",	"1",	"10",	"16",	"14",	"3",	"8",	"6",	"12",	
+                     "3",	"9",	"5",	"2",	"15",	"10",	"4",	"7",	"4",	"7",	"16",	"5",	
+                     "5",	"6",	"6",	"13",	"7",	"4",	"12",	"14",	"7",	"4",	"12",	"2",
+                     "2",	"2",	"1",	"16",	"9",	"9",	"13",	"5",	"11",	"16",	"15",	"6",
+                     "3",	"2",	"12",	"1",	"15",	"8",	"14",	"6",	"12",	"15",	"10",	"9",
+                     "7",	"6",	"1",	"6",	"7",	"7",	"16",	"13",	"8",	"13",	"15",	"10",	
+                     "5",	"9",	"5",	"10",	"7",	"6",	"9",	"11",	"6",	"8",	"6",	"5",	
+                     "12",	"6",	"12",	"3",	"5",	"4",	"1",	"5",	"2",	"7",	"16",	"2",
+                     "2",	"1",	"2",	"16",	"4",	"10",	"5",	"2",	"16",	"11",	"6",	"16",	
+                     "9",	"9",	"15",	"6",	"10",	"6",	"5")
+
+Região_de_Saúde <- data.frame(Região_de_Saúde)
+Região_de_Saúde_PB <- c(Região_de_Saúde, municipios_PB) 
+Região_de_Saúde_PB <- data.frame(Região_de_Saúde_PB)
+
+#acrescentar GRS
+GRS1 <- c("11",	"7",	"3",	"3",	"2",	"3",	"3",	"1",	"5",	"10",	"2",	"3",
+          "2",	"3",	"6",	"3",	"3",	"3",	"1",	"2",	"4",	"4",	"3",	"3",
+          "1",	"2",	"8",	"9",	"7",	"3",	"9",	"8",	"9",	"3",	"2",	"8",
+          "8",	"1",	"3",	"1",	"9",	"6",	"2",	"6",	"2",	"9",	"10",	"12",
+          "5",	"3",	"1",	"5",	"9",	"2",	"6",	"8",	"3",	"7",	"6",	"1",
+          "5",	"7",	"5",	"1",	"4",	"4",	"1",	"2",	"1",	"7",	"4",	"6",
+          "7",	"2",	"2",	"6",	"3",	"3",	"4",	"3",	"2",	"12",	"5",	"7",
+          "7",	"11",	"12",	"12",	"7",	"1",	"12",	"1",	"8",	"1",	"9",	"12",
+          "3",	"6",	"12",	"11",	"10",	"2",	"3",	"10",	"3",	"2",	"1",	"6",
+          "6",	"1",	"11",	"1",	"1",	"10",	"3",	"1",	"3",	"8",	"6",	"12",
+          "3",	"9",	"5",	"2",	"3",	"10",	"4",	"7",	"4",	"7",	"3",	"5",
+          "5",	"6",	"6",	"10",	"7",	"4",	"12",	"1",	"7",	"4",	"12",	"2",
+          "2",	"2",	"1",	"3",	"9",	"9",	"10",	"5",	"11",	"3",	"3",	"6",
+          "3",	"2",	"12",	"1",	"3",	"8",	"1",	"6",	"12",	"3",	"10",	"9",
+          "7",	"6",	"1",	"6",	"7",	"7",	"3",	"10",	"8",	"10",	"3",	"10",
+          "5",	"9",	"5",	"10",	"7",	"6",	"9",	"11",	"6",	"8",	"6",	"5",
+          "12",	"6",	"12",	"3",	"5",	"4",	"1",	"5",	"2",	"7",	"3",	"2",
+          "2",	"1",	"2",	"3",	"4",	"10",	"5",	"2",	"3",	"11",	"6",	"3",
+          "9",	"9",	"3",	"6",	"10",	"6",	"5")
+
+GRS1 <- data.frame(GRS1)
+GRS_PB <- c(GRS1, municipios_PB) 
+GRS_PB <- data.frame(GRS_PB)
+
+#acrescentar macro
+Macro <- c("3",	"3",	"2",	"2",	"1",	"2",	"2",	"1",	"2",	"3",	"1",	"2",
+           "1",	"2",	"3",	"2",	"2",	"2",	"1",	"1",	"2",	"2",	"2",	"2",
+           "1",	"1",	"3",	"3",	"3",	"2",	"3",	"3",	"3",	"2",	"1",	"3",
+           "3",	"1",	"2",	"1",	"3",	"3",	"1",	"3",	"1",	"3",	"3",	"1",
+           "2",	"2",	"1",	"2",	"3",	"1",	"3",	"3",	"2",	"3",	"3",	"1",
+           "2",	"3",	"2",	"1",	"2",	"2",	"1",	"1",	"1",	"3",	"1",	"3",
+           "3",	"1",	"1",	"3",	"2",	"2",	"2",	"2",	"1",	"1",	"2",	"3",
+           "3",	"3",	"1",	"1",	"3",	"1",	"1",	"1",	"3",	"1",	"3",	"1",
+           "2",	"3",	"1",	"3",	"3",	"1",	"2",	"3",	"2",	"1",	"1",	"3",
+           "3",	"1",	"3",	"1",	"1",	"3",	"2",	"1",	"2",	"3",	"3",	"1",
+           "2",	"3",	"2",	"1",	"2",	"3",	"2",	"3",	"2",	"3",	"2",	"2",
+           "2",	"3",	"3",	"3",	"3",	"2",	"1",	"1",	"3",	"2",	"1",	"1",
+           "1",	"1",	"1",	"2",	"3",	"3",	"3",	"2",	"3",	"2",	"2",	"3",
+           "2",	"1",	"1",	"1",	"2",	"3",	"1",	"3",	"1",	"2",	"3",	"3",
+           "3",	"3",	"1",	"3",	"3",	"3",	"2",	"3",	"3",	"3",	"2",	"3",
+           "2",	"3",	"2",	"3",	"3",	"3",	"3",	"3",	"3",	"3",	"3",	"2",
+           "1",	"3",	"1",	"2",	"2",	"2",	"1",	"2",	"1",	"3",	"2",	"1",
+           "1",	"1",	"1",	"2",	"2",	"3",	"2",	"1",	"2",	"3",	"3",	"2",
+           "3",	"3",	"2",	"3",	"3",	"3",	"2")
+
+Macro <- data.frame(Macro)
+Macro_PB <- c(Macro, municipios_PB) 
+Macro_PB <- data.frame(Macro_PB)
+
+#acrescentar GRS, RS e macro
+municipios_PB <- left_join(municipios_PB, GRS_PB, by = "cod_ibge")
+municipios_PB <- left_join(municipios_PB, Região_de_Saúde_PB, by = "cod_ibge")
+municipios_PB <- left_join(municipios_PB, Macro_PB, by = "cod_ibge")
+
+municipios_PB <- subset(municipios_PB,
+                        select = -c(nm_municipios_PB.y,
+                                    nm_municipios_PB.x.x,
+                                    nm_municipios_PB.y.y))
+
+municipios_PB <- rename(municipios_PB, GRS = GRS1)
+
+#renomear ID_MN_RESI para o left_join GRS, RS e Macro
+data_dengue <- dplyr::rename(data_dengue, cod_ibge = ID_MN_RESI)
+data_dengue <- left_join(data_dengue, municipios_PB, by = "cod_ibge")
+
+#renomear ID_MN_RESI para o left_join GRS, RS e Macro
+data_chik <- dplyr::rename(data_chik, cod_ibge = ID_MN_RESI)
+data_chik <- left_join(data_chik, municipios_PB, by = "cod_ibge")
+
+#renomear ID_MN_RESI para o left_join GRS, RS e Macro
+data_zika <- dplyr::rename(data_zika, cod_ibge = ID_MN_RESI)
+data_zika <- left_join(data_zika, municipios_PB, by = "cod_ibge")
+
 ############################# CRIACAO DE CHAVE ###############################
 #criar id pessoa
 #criação de ID_Pessoa
@@ -106,9 +317,35 @@ data_chik_menor_2016 <- filter(data_chik, data_chik$DT_SIN_PRI < 2016)
 data_zika_menor_2016 <- filter(data_zika, data_zika$DT_SIN_PRI < 2016)
 
 #separar registros válidos para análise
-data_dengue <- filter(data_dengue, data_dengue$DT_SIN_PRI > "2006-12-31")
-data_chik <- filter(data_chik, data_chik$DT_SIN_PRI > "2015-12-31")
-data_zika <- filter(data_zika, data_zika$DT_SIN_PRI > "2015-12-31")
+data_dengue <- filter(data_dengue, data_dengue$DT_SIN_PRI > "2022-01-01")
+data_chik <- filter(data_chik, data_chik$DT_SIN_PRI > "2022-01-01")
+data_zika <- filter(data_zika, data_zika$DT_SIN_PRI > "2022-01-01")
+
+####################### REMOVER DUPLICIDADES ###################################
+#remover duplicados de IS + id_pessoa
+id_pessoa_dengue1 <- paste(data_dengue$DT_SIN_PRI, data_dengue$id_pessoa_dengue)
+id_pessoa_dengue1 <- data.frame(id_pessoa_dengue1)
+data_dengue <- mutate(data_dengue, id_pessoa_dengue1)
+data_dengue <- data_dengue[!duplicated(data_dengue$id_pessoa_dengue1), ]
+
+data_dengue <- subset(data_dengue, 
+                       select = -c(id_pessoa_dengue1))
+
+id_pessoa_chik1 <- paste(data_chik$DT_SIN_PRI, data_chik$id_pessoa_chik)
+id_pessoa_chik1 <- data.frame(id_pessoa_chik1)
+data_chik <- mutate(data_chik, id_pessoa_chik1)
+data_chik <- data_chik[!duplicated(data_chik$id_pessoa_chik1), ]
+
+data_chik <- subset(data_chik, 
+                    select = -c(id_pessoa_chik1))
+
+id_pessoa_zika1 <- paste(data_zika$DT_SIN_PRI, data_zika$id_pessoa_zika)
+id_pessoa_zika1 <- data.frame(id_pessoa_zika1)
+data_zika <- mutate(data_zika, id_pessoa_zika1)
+data_zika <- data_zika[!duplicated(data_zika$id_pessoa_zika1), ]
+
+data_zika <- subset(data_zika, 
+                    select = -c(id_pessoa_zika1))
 
 ########################## CONTABILIZAÇÃO DE CASOS #############################
 ############### DENGUE CONFIRMADOS, DESCARTADOS E PROVÁVEIS ####################
@@ -131,22 +368,26 @@ data_dengue_confirmados <- bind_rows(data_dengue_pcr,
                                      data_dengue_outros_positivos,
                                      data_dengue_clin_epidemio)
 
+#após junção de linhas, retirar possíveis duplicidades
+id_pessoa_dengue2 <- paste(data_dengue_confirmados$DT_SIN_PRI, data_dengue_confirmados$id_pessoa_dengue)
+id_pessoa_dengue2 <- data.frame(id_pessoa_dengue2)
+data_dengue_confirmados <- mutate(data_dengue_confirmados, id_pessoa_dengue2)
+data_dengue_confirmados <- data_dengue_confirmados[!duplicated(data_dengue_confirmados$id_pessoa_dengue2), ]
+data_dengue_confirmados <- subset(data_dengue_confirmados, 
+                                select = -c(id_pessoa_dengue2))
+
 #regra de 90 dias para data_dengue_confirmados
 #mesmo id_pessoa só pode ter 4 tipos de dengue ao longo da vida
 #ordenar nome_paciente e id_pessoa_dengue
 DT_dengue_90_dias <- data_dengue_confirmados %>% arrange(data_dengue_confirmados$DT_SIN_PRI) 
 DT_dengue_90_dias <- DT_dengue_90_dias %>% arrange(DT_dengue_90_dias$NM_PACIENT)
 
-#remover duplicados de IS + id_pessoa
-DT_dengue_90_dias <- DT_dengue_90_dias[!duplicated(t(apply(DT_dengue_90_dias[, c("DT_SIN_PRI" , "id_pessoa_dengue")], 1, sort))), ]
 #verificar frequências
 freq_DT_90_dias <- table(DT_dengue_90_dias$id_pessoa_dengue) 
 freq_DT_90_dias <- data.frame(freq_DT_90_dias)
 freq_DT_90_dias <- rename(freq_DT_90_dias, id_pessoa_dengue = Var1)
 #adicionar freq no objeto DT_dengue_90_dias
 DT_dengue_90_dias <- left_join(DT_dengue_90_dias, freq_DT_90_dias, by = "id_pessoa_dengue")
-#remover duplicados de IS + id_pessoa
-DT_dengue_90_dias <- DT_dengue_90_dias[!duplicated(t(apply(DT_dengue_90_dias[, c("DT_SIN_PRI" , "id_pessoa_dengue")], 1, sort))), ]
 
 #filtrar quem tem um registro ou mais de 2 registros
 #ao final juntar o de frequência 1 + de frequência superior a 2, após aplicar regra dos 90 dias
@@ -168,12 +409,14 @@ DT_dengue_pos_90_dias <- DT_dengue_90_dias_maior2 %>%
 DT_dengue_pos_90_dias <- DT_dengue_pos_90_dias %>% 
   filter(DT_dengue_pos_90_dias$check == "True" | DT_dengue_pos_90_dias$check1 == "True")
 
+
 #unir os dados após aplicação da regra dos 90 dias
 DT_dengue_pos_90_dias <- subset(DT_dengue_pos_90_dias, 
                                   select = -c(dt_primeiro_sintoma,
                                               diferenca,
                                               check,
-                                              check1))
+                                              check1,
+                                              id_pessoa_dengue2))
 
 data_dengue_pos_90_dias <- bind_rows(DT_dengue_90_dias_igual1, DT_dengue_pos_90_dias)
 
@@ -182,7 +425,6 @@ data_dengue_confirmados <- data_dengue_pos_90_dias
 data_dengue_confirmados <- subset(data_dengue_confirmados, 
                              select = -c(NU_NOTIFIC,
                                          ID_REGIONA,
-                                         NM_PACIENT,
                                          FONETICA_N,
                                          SOUNDEX,
                                          ID_CNS_SUS,
@@ -213,11 +455,9 @@ data_dengue_confirmados <- rename(data_dengue_confirmados, marcador = X.confirma
 #grupo2 descartados_dengue (exame negativo e sem clínico epidemiológico)
 data_dengue_descartados <- filter(data_dengue, data_dengue$CLASSI_FIN == "5")
 
-data_dengue_descartados <- data_dengue_descartados[!duplicated(t(apply(data_dengue_descartados[, c("DT_SIN_PRI" , "id_pessoa_dengue")], 1, sort))), ]
 data_dengue_descartados <- subset(data_dengue_descartados, 
                                   select = -c(NU_NOTIFIC,
                                               ID_REGIONA,
-                                              NM_PACIENT,
                                               FONETICA_N,
                                               SOUNDEX,
                                               ID_CNS_SUS,
@@ -245,54 +485,22 @@ data_dengue_descartados <- mutate(data_dengue_descartados, marc_dengue1)
 data_dengue_descartados <- rename(data_dengue_descartados, marcador = X.descartados.)
 
 #grupo3 prováveis_dengue (todo mundo, menos os descartados)
-#verificar sem resultados
-data_dengue_sem_resul0 <- data_dengue %>% filter(is.na(data_dengue$RESUL_SORO))
-data_dengue_sem_resul1 <- data_dengue %>% filter(is.na(data_dengue$RESUL_NS1))
-data_dengue_sem_resul2 <- data_dengue %>% filter(is.na(data_dengue$RESUL_VI_N))
-data_dengue_sem_resul3 <- data_dengue %>% filter(is.na(data_dengue$HISTOPA_N))
-data_dengue_sem_resul4 <- data_dengue %>% filter(is.na(data_dengue$IMUNOH_N))
-data_dengue_sem_resul5 <- data_dengue %>% filter(is.na(data_dengue$CLASSI_FIN))
-data_dengue_sem_resul6 <- data_dengue %>% filter(is.na(data_dengue$RESUL_PCR_))
-data_dengue_sem_resul7 <- filter(data_dengue,
-                                 data_dengue$RESUL_SORO == "3" |
-                                 data_dengue$RESUL_NS1 == "3" |
-                                 data_dengue$RESUL_VI_N == "3" |
-                                 data_dengue$HISTOPA_N == "3" |
-                                 data_dengue$IMUNOH_N == "3")
-
-data_dengue_sem_resul8 <- filter(data_dengue,
-                                 data_dengue$RESUL_SORO == "4" |
-                                 data_dengue$RESUL_NS1 == "4" |
-                                 data_dengue$RESUL_VI_N == "4" |
-                                 data_dengue$HISTOPA_N == "4" |
-                                 data_dengue$IMUNOH_N == "4")
-
-
-data_dengue_sem_resultado <- bind_rows(data_dengue_sem_resul0, data_dengue_sem_resul1,
-                                       data_dengue_sem_resul2, data_dengue_sem_resul3,
-                                       data_dengue_sem_resul4, data_dengue_sem_resul5,
-                                       data_dengue_sem_resul6, data_dengue_sem_resul7,
-                                       data_dengue_sem_resul8)
-
-data_dengue_sem_resultado <- data_dengue_sem_resultado[!duplicated(t(apply(data_dengue_sem_resultado[, c("DT_SIN_PRI" , "id_pessoa_dengue")], 1, sort))), ]
-
-#verificar prováveis pela classificação
-data_dengue_prov <- filter(data_dengue, 
-                           data_dengue$CLASSI_FIN == "10" |
-                           data_dengue$CLASSI_FIN == "11" |
-                          data_dengue$CLASSI_FIN == "12") 
-
-data_dengue_prov <- data_dengue_prov[!duplicated(t(apply(data_dengue_prov[, c("DT_SIN_PRI" , "id_pessoa_dengue")], 1, sort))), ]
+data_dengue_prov <- filter(data_dengue, data_dengue$CLASSI_FIN != "5")
+data_dengue_prov1 <- data_dengue %>% filter(is.na(data_dengue$CLASSI_FIN))
 
 data_dengue_provaveis <- bind_rows(data_dengue_prov,
-                                  data_dengue_sem_resultado)
+                                   data_dengue_prov1)
 
-data_dengue_provaveis <- data_dengue_provaveis[!duplicated(t(apply(data_dengue_provaveis[, c("DT_SIN_PRI" , "id_pessoa_dengue")], 1, sort))), ]
+id_pessoa_dengue3 <- paste(data_dengue_provaveis$DT_SIN_PRI, data_dengue_provaveis$id_pessoa_dengue)
+id_pessoa_dengue3 <- data.frame(id_pessoa_dengue3)
+data_dengue_provaveis <- mutate(data_dengue_provaveis, id_pessoa_dengue3)
+data_dengue_provaveis <- data_dengue_provaveis[!duplicated(data_dengue_provaveis$id_pessoa_dengue3), ]
+data_dengue_provaveis <- subset(data_dengue_provaveis, 
+                                select = -c(id_pessoa_dengue3))
 
 data_dengue_provaveis <- subset(data_dengue_provaveis, 
                                     select = -c(NU_NOTIFIC,
                                                 ID_REGIONA,
-                                                NM_PACIENT,
                                                 FONETICA_N,
                                                 SOUNDEX,
                                                 ID_CNS_SUS,
@@ -319,9 +527,6 @@ marc_dengue2 <- data.frame("prováveis")
 data_dengue_provaveis <- mutate(data_dengue_provaveis, marc_dengue2)
 data_dengue_provaveis <- rename(data_dengue_provaveis, marcador = X.prováveis.)
 
-data_dengue_provaveis <- bind_rows(data_dengue_confirmados,
-                                   data_dengue_provaveis)
-
 ############### CHIKUNGUNYA CONFIRMADOS, DESCARTADOS E PROVÁVEIS ###############
 #grupo1 chik_confirmados
 #Chik_confirmado_laboratorial
@@ -344,11 +549,17 @@ data_chik_confirmados <- bind_rows(data_chik_pcr,
                                      data_chik_outros_positivos,
                                      data_chik_clin_epidemio)
 
-data_chik_confirmados <- data_chik_confirmados[!duplicated(t(apply(data_chik_confirmados[, c("DT_SIN_PRI" , "id_pessoa_chik")], 1, sort))), ]
+#após junção de linhas, retirar possíveis duplicidades
+id_pessoa_chik1 <- paste(data_chik_confirmados$DT_SIN_PRI, data_chik_confirmados$id_pessoa_chik)
+id_pessoa_chik1 <- data.frame(id_pessoa_chik1)
+data_chik_confirmados <- mutate(data_chik_confirmados, id_pessoa_chik1)
+data_chik_confirmados <- data_chik_confirmados[!duplicated(data_chik_confirmados$id_pessoa_chik1), ]
+data_chik_confirmados <- subset(data_chik_confirmados, 
+                                select = -c(id_pessoa_chik1))
+
 data_chik_confirmados <- subset(data_chik_confirmados, 
                                 select = -c(NU_NOTIFIC,
                                             ID_REGIONA,
-                                            NM_PACIENT,
                                             FONETICA_N,
                                             SOUNDEX,
                                             ID_CNS_SUS,
@@ -379,11 +590,9 @@ data_chik_confirmados <- rename(data_chik_confirmados, marcador = X.confirmados.
 #grupo2 descartados_chik (exame negativo e sem clínico epidemiológico)
 data_chik_descartados <- filter(data_chik, data_chik$CLASSI_FIN == "5")
 
-data_chik_descartados <- data_chik_descartados[!duplicated(t(apply(data_chik_descartados[, c("DT_SIN_PRI" , "id_pessoa_chik")], 1, sort))), ]
 data_chik_descartados <- subset(data_chik_descartados, 
                                 select = -c(NU_NOTIFIC,
                                             ID_REGIONA,
-                                            NM_PACIENT,
                                             FONETICA_N,
                                             SOUNDEX,
                                             ID_CNS_SUS,
@@ -411,54 +620,27 @@ data_chik_descartados <- mutate(data_chik_descartados, marc_chik1)
 data_chik_descartados <- rename(data_chik_descartados, marcador = X.descartados.)
 
 #grupo3 prováveis_chik (todo mundo, menos os descartados)
-data_chik_sem_resul0 <- data_chik %>% filter(is.na(data_chik$RES_CHIKS1))
-data_chik_sem_resul1 <- data_chik %>% filter(is.na(data_chik$RES_CHIKS2))
-data_chik_sem_resul2 <- data_chik %>% filter(is.na(data_chik$RESUL_PRNT))
-data_chik_sem_resul3 <- data_chik %>% filter(is.na(data_chik$RESUL_SORO))
-data_chik_sem_resul4 <- data_chik %>% filter(is.na(data_chik$RESUL_VI_N))
-data_chik_sem_resul5 <- data_chik %>% filter(is.na(data_chik$HISTOPA_N))
-data_chik_sem_resul6 <- data_chik %>% filter(is.na(data_chik$RESUL_PCR_))
-data_chik_sem_resul7 <- data_chik %>% filter(is.na(data_chik$IMUNOH_N))
-data_chik_sem_resul8 <- filter(data_chik,
-                                 data_chik$RES_CHIKS1 == "3" |
-                                   data_chik$RES_CHIKS2 == "3" |
-                                   data_chik$RESUL_PRNT == "3" |
-                                   data_chik$RESUL_SORO == "3" |
-                                   data_chik$RESUL_VI_N == "3" |
-                                   data_chik$HISTOPA_N == "3" |
-                                   data_chik$IMUNOH_N == "3" |
-                                   data_chik$RESUL_PCR_ == "3")
-
-data_chik_sem_resul9 <- filter(data_chik,
-                               data_chik$RES_CHIKS1 == "4" |
-                                 data_chik$RES_CHIKS2 == "4" |
-                                 data_chik$RESUL_PRNT == "4" |
-                                 data_chik$RESUL_SORO == "4" |
-                                 data_chik$RESUL_VI_N == "4" |
-                                 data_chik$HISTOPA_N == "4" |
-                                 data_chik$IMUNOH_N == "4" |
-                                 data_chik$RESUL_PCR_ == "4")
-
-data_chik_sem_resultado <- bind_rows(data_chik_sem_resul0, data_chik_sem_resul1,
-                                       data_chik_sem_resul2, data_chik_sem_resul3,
-                                       data_chik_sem_resul4, data_chik_sem_resul5,
-                                       data_chik_sem_resul6, data_chik_sem_resul7,
-                                       data_chik_sem_resul8, data_chik_sem_resul9)
-
-data_chik_prov <- filter(data_chik, 
-                         data_chik$CLASSI_FIN == "10" |
-                         data_chik$CLASSI_FIN == "11" |
-                         data_chik$CLASSI_FIN == "12")
+data_chik_prov <- filter(data_chik, data_chik$CLASSI_FIN != "5")
+data_chik_prov1 <- data_chik %>% filter(is.na(data_chik$CLASSI_FIN))
 
 data_chik_provaveis <- bind_rows(data_chik_prov,
-                                 data_chik_sem_resultado)
+                                 data_chik_prov1)
 
-data_chik_provaveis <- data_chik_provaveis[!duplicated(t(apply(data_chik_provaveis[, c("DT_SIN_PRI" , "id_pessoa_chik")], 1, sort))), ]
+#após junção de linhas, retirar possíveis duplicidades
+id_pessoa_chik3<- paste(data_chik_provaveis$DT_SIN_PRI, data_chik_provaveis$id_pessoa_chik)
+id_pessoa_chik3 <- data.frame(id_pessoa_chik3)
+data_chik_provaveis <- mutate(data_chik_provaveis, id_pessoa_chik3)
+data_chik_provaveis <- data_chik_provaveis[!duplicated(data_chik_provaveis$id_pessoa_chik3), ]
+data_chik_provaveis <- subset(data_chik_provaveis, 
+                              select = -c(id_pessoa_chik3))
+
+marc_chik2 <- data.frame("prováveis")
+data_chik_provaveis <- mutate(data_chik_provaveis, marc_chik2)
+data_chik_provaveis <- rename(data_chik_provaveis, marcador = X.prováveis.)
 
 data_chik_provaveis <- subset(data_chik_provaveis, 
                            select = -c(NU_NOTIFIC,
                                       ID_REGIONA,
-                                      NM_PACIENT,
                                       FONETICA_N,
                                       SOUNDEX,
                                       ID_CNS_SUS,
@@ -481,23 +663,15 @@ data_chik_provaveis <- subset(data_chik_provaveis,
                                       IDENT_MICR,
                                       id_pessoa_chik))
 
-marc_chik2 <- data.frame("prováveis")
-data_chik_provaveis <- mutate(data_chik_provaveis, marc_chik2)
-data_chik_provaveis <- rename(data_chik_provaveis, marcador = X.prováveis.)
-
-data_chik_provaveis <- bind_rows(data_chik_confirmados,
-                                 data_chik_provaveis)
-
 ##################### ZIKA CONFIRMADOS, DESCARTADOS E PROVÁVEIS ################
 #grupo1 confirmados_zika
 data_zika_confirmados <- filter(data_zika, 
-                                data_zika$CLASSI_FIN == 1)
+                                data_zika$CLASSI_FIN == "1")
+data_zika_confirmados <- data_zika_confirmados[!duplicated(data_zika_confirmados$id_pessoa_zika), ]
 
-data_zika_confirmados <- data_zika_confirmados[!duplicated(t(apply(data_zika_confirmados[, c("DT_SIN_PRI" , "id_pessoa_zika")], 1, sort))), ]
 data_zika_confirmados <- subset(data_zika_confirmados, 
                               select = -c(NU_NOTIFIC,
                                           ID_REGIONA,
-                                          NM_PACIENT,
                                           FONETICA_N,
                                           SOUNDEX,
                                           ID_CNS_SUS,
@@ -527,11 +701,9 @@ data_zika_confirmados <- rename(data_zika_confirmados, marcador = X.confirmados.
 data_zika_descartados<-  filter(data_zika, 
                                 data_zika$CLASSI_FIN == "2")
 
-data_zika_descartados <- data_zika_descartados[!duplicated(t(apply(data_zika_descartados[, c("DT_SIN_PRI" , "id_pessoa_zika")], 1, sort))), ]
 data_zika_descartados <- subset(data_zika_descartados, 
                                 select = -c(NU_NOTIFIC,
                                             ID_REGIONA,
-                                            NM_PACIENT,
                                             FONETICA_N,
                                             SOUNDEX,
                                             ID_CNS_SUS,
@@ -557,16 +729,29 @@ marc_zika1 <- data.frame("descartados")
 data_zika_descartados <- mutate(data_zika_descartados, marc_zika1)
 data_zika_descartados <- rename(data_zika_descartados, marcador = X.descartados.)
 
+#após junção de linhas, retirar possíveis duplicidades
+id_pessoa_zika2 <- paste(data_zika_descartados$DT_SIN_PRI, data_zika_descartados$id_pessoa_zika)
+id_pessoa_zika2 <- data.frame(id_pessoa_zika2)
+data_zika_descartados <- mutate(data_zika_descartados, id_pessoa_zika2)
+data_zika_descartados <- data_zika_descartados[!duplicated(data_zika_descartados$id_pessoa_zika2), ]
+data_zika_descartados <- subset(data_zika_descartados, 
+                                select = -c(id_pessoa_zika2))
+
 #grupo3 prováveis_zika (todo mundo, menos os descartados)
-data_zika_sem_resul <- data_zika %>% filter(is.na(data_zika$CLASSI_FIN))
+data_zika_prov <- filter(data_zika, 
+                              data_zika$CLASSI_FIN != "2")
 
-data_zika_sem_resultado <- data_zika_sem_resul
+data_zika_prov1 <- data_zika %>% filter(is.na(data_zika$CLASSI_FIN))
 
-data_zika_sem_resultado <- data_zika_sem_resultado[!duplicated(t(apply(data_zika_sem_resultado[, c("DT_SIN_PRI" , "id_pessoa_zika")], 1, sort))), ]
-data_zika_sem_resultado <- subset(data_zika_sem_resultado, 
+data_zika_provaveis <- bind_rows(data_zika_prov,
+                                 data_zika_prov1)
+  
+marc_zik2 <- data.frame("prováveis")
+data_zika_provaveis <- mutate(data_zika_provaveis, marc_zik2)
+data_zika_provaveis <- rename(data_zika_provaveis, marcador = X.prováveis.)
+data_zika_provaveis <- subset(data_zika_provaveis, 
                                   select = -c(NU_NOTIFIC,
                                               ID_REGIONA,
-                                              NM_PACIENT,
                                               FONETICA_N,
                                               SOUNDEX,
                                               ID_CNS_SUS,
@@ -588,27 +773,19 @@ data_zika_sem_resultado <- subset(data_zika_sem_resultado,
                                               IDENT_MICR,
                                               id_pessoa_zika))
 
-marc_zik2 <- data.frame("prováveis")
-data_zika_sem_resultado <- mutate(data_zika_sem_resultado, marc_zik2)
-data_zika_sem_resultado <- rename(data_zika_sem_resultado, marcador = X.prováveis.)
-
-data_zika_provaveis <- bind_rows(data_zika_confirmados,
-                                 data_zika_sem_resultado)
-
 ###################################### saídas ##################################
-#bases para PBI (sem dados sensíveis)
-data_arbo <- bind_rows (data_dengue_confirmados,
-                        data_dengue_descartados,
-                        data_dengue_provaveis,
-                        data_chik_confirmados,
-                        data_chik_descartados,
-                        data_chik_provaveis,
-                        data_zika_confirmados,
-                        data_zika_descartados,
-                        data_zika_provaveis)
-                      
-##saidas 
-write.csv(data_arbo, "data_arbo.csv", row.names = FALSE)
+##saidas #nome da aba = #nome do objeto
+export(list(dengue_confirmados = data_dengue_confirmados,
+            dengue_descartados = data_dengue_descartados,
+            dengue_provaveis = data_dengue_provaveis,
+            chik_confirmados = data_chik_confirmados,
+            chik_descartados = data_chik_descartados,
+            chik_provaveis = data_chik_provaveis,
+            zika_confirmados = data_zika_confirmados,
+            zika_descartados = data_zika_descartados,
+            zika_provaveis = data_zika_provaveis),
+       file = "Para_boletim_arbo.xlsx")
+
 write.csv(data_dengue_menor_2007, "dengue_menor_2007.csv", row.names = FALSE)
 write.csv(data_chik_menor_2016, "chik_menor_2016.csv", row.names = FALSE)
 write.csv(data_zika_menor_2016, "zika_menor_2016.csv", row.names = FALSE)
