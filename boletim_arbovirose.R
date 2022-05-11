@@ -415,8 +415,7 @@ DT_dengue_pos_90_dias <- subset(DT_dengue_pos_90_dias,
                                   select = -c(dt_primeiro_sintoma,
                                               diferenca,
                                               check,
-                                              check1,
-                                              id_pessoa_dengue2))
+                                              check1))
 
 data_dengue_pos_90_dias <- bind_rows(DT_dengue_90_dias_igual1, DT_dengue_pos_90_dias)
 
@@ -784,10 +783,10 @@ export(list(dengue_confirmados = data_dengue_confirmados,
             zika_confirmados = data_zika_confirmados,
             zika_descartados = data_zika_descartados,
             zika_provaveis = data_zika_provaveis),
-       file = "Para_boletim_arbo.xlsx")
+       file = "C:/Users/NDTA.Dses01213518/Desktop/Azul BE_limpo/Azul_dados limpos_para_boletim_arbo/Para_boletim_arbo.xlsx")
 
-write.csv(data_dengue_menor_2007, "dengue_menor_2007.csv", row.names = FALSE)
-write.csv(data_chik_menor_2016, "chik_menor_2016.csv", row.names = FALSE)
-write.csv(data_zika_menor_2016, "zika_menor_2016.csv", row.names = FALSE)
+write.csv(data_dengue_menor_2007, "C:/Users/NDTA.Dses01213518/Desktop/Azul BE_limpo/Inconsistências de início de sintomas/dengue_menor_2007.csv", row.names = FALSE)
+write.csv(data_chik_menor_2016, "C:/Users/NDTA.Dses01213518/Desktop/Azul BE_limpo/Inconsistências de início de sintomas/chik_menor_2016.csv", row.names = FALSE)
+write.csv(data_zika_menor_2016, "C:/Users/NDTA.Dses01213518/Desktop/Azul BE_limpo/Inconsistências de início de sintomas/zika_menor_2016.csv", row.names = FALSE)
 
 #############FIM
