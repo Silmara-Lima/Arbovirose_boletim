@@ -66,7 +66,28 @@ RemoveAcentos(data_zika$NM_PACIENT)
 
 #ajustar numeric
 data_dengue$RESUL_PCR_ <- as.numeric(levels(data_dengue$RESUL_PCR_))[data_dengue$RESUL_PCR_]
+data_dengue$CLASSI_FIN <- as.numeric(levels(data_dengue$CLASSI_FIN))[data_dengue$CLASSI_FIN]
+data_dengue$RESUL_SORO <- as.numeric(levels(data_dengue$RESUL_SORO))[data_dengue$RESUL_SORO]
+data_dengue$RESUL_NS1 <- as.numeric(levels(data_dengue$RESUL_NS1))[data_dengue$RESUL_NS1]
+data_dengue$RESUL_VI_N <- as.numeric(levels(data_dengue$RESUL_PCR_))[data_dengue$RESUL_VI_N]
+data_dengue$HISTOPA_N <- as.numeric(levels(data_dengue$HISTOPA_N))[data_dengue$HISTOPA_N]
+data_dengue$IMUNOH_N <- as.numeric(levels(data_dengue$RESUL_PCR_))[data_dengue$IMUNOH_N]
 data_chik$RESUL_PCR_ <- as.numeric(levels(data_chik$RESUL_PCR_))[data_chik$RESUL_PCR_]
+data_chik$CLASSI_FIN <- as.numeric(levels(data_chik$RESUL_PCR_))[data_chik$RESUL_PCR_]
+data_chik$RES_CHIKS1 <- as.numeric(levels(data_chik$RESUL_PCR_))[data_chik$RESUL_PCR_]
+data_chik$RES_CHIKS2 <- as.numeric(levels(data_chik$RESUL_PCR_))[data_chik$RESUL_PCR_]
+data_chik$RESUL_PRNT <- as.numeric(levels(data_chik$RESUL_PCR_))[data_chik$RESUL_PCR_]
+data_chik$RESUL_SORO <- as.numeric(levels(data_chik$RESUL_PCR_))[data_chik$RESUL_PCR_]
+data_chik$RESUL_VI_N <- as.numeric(levels(data_chik$RESUL_PCR_))[data_chik$RESUL_PCR_]
+data_chik$HISTOPA_N <- as.numeric(levels(data_chik$RESUL_PCR_))[data_chik$RESUL_PCR_]
+data_chik$IMUNOH_N <- as.numeric(levels(data_chik$RESUL_PCR_))[data_chik$RESUL_PCR_]
+
+
+
+
+data_chik[is.na(data_chik)] <- 0
+data_zika[is.na(data_zika)] <- 0
+
 
 #ajustar data
 data_dengue$DT_SIN_PRI <- as.Date(data_dengue$DT_SIN_PRI, format="%d-%m-%Y")
@@ -351,30 +372,173 @@ data_zika <- subset(data_zika,
 ############### DENGUE CONFIRMADOS, DESCARTADOS E PROVÁVEIS ####################
 #grupo 1 confirmados_dengue
 #Dengue_confirmado_laboratorial
-data_dengue_pcr <- filter(data_dengue, data_dengue$RESUL_PCR_ == "1")
-data_dengue_outros_positivos <-   filter(data_dengue,
-                                      data_dengue$RESUL_SORO == "1" |
-                                      data_dengue$RESUL_NS1 == "1" |
-                                      data_dengue$RESUL_VI_N == "1" |
-                                      data_dengue$HISTOPA_N == "1" |
-                                      data_dengue$IMUNOH_N == "1")
+data_dengue_laboratorio <-   filter(data_dengue,
+                                         data_dengue$RESUL_PCR_ == "1" |
+                                          data_dengue$RESUL_SORO == "1" |
+                                          data_dengue$RESUL_NS1 == "1" |
+                                          data_dengue$RESUL_VI_N == "1" |
+                                          data_dengue$HISTOPA_N == "1" |
+                                          data_dengue$IMUNOH_N == "1" |
+                                          data_dengue$RESUL_PRNT == "1")
 
-#Dengue_confirmado_clínico_epidemiológico
-data_dengue_clin_epidemio <- filter(data_dengue,
-                             data_dengue$CRITERIO =="2")
+#Dengue_possui_clínica
+#verificar quem dos que tem febre tem pelo menos 2 manifestações clínicas
+data_dengue_clinico <- filter(data_dengue, 
+                              data_dengue$FEBRE == "1")
+data_dengue_clinico <- data_dengue_clinico %>%
+                          filter (data_dengue_clinico$NAUSEA == 1 |
+                          data_dengue_clinico$VOMITO == 1 |
+                          data_dengue_clinico$MIALGIA == 1 |
+                          data_dengue_clinico$ARTRALGIA == 1 |
+                          data_dengue_clinico$CEFALEIA == 1 |
+                          data_dengue_clinico$DOR_RETRO == 1 |
+                          data_dengue_clinico$PETEQUIAS == 1 |
+                          data_dengue_clinico$PETEQUIA_N == 1 |
+                          data_dengue_clinico$LACO == 1 |
+                          data_dengue_clinico$LEUCOPENIA == 1 |
+                          data_dengue_clinico$ALRM_HIPOT == 1 |
+                          data_dengue_clinico$ALRM_PLAQ == 1 |
+                          data_dengue_clinico$ALRM_VOM == 1 |
+                          data_dengue_clinico$ALRM_SANG == 1 |
+                          data_dengue_clinico$ALRM_HEMAT == 1 |
+                          data_dengue_clinico$ALRM_ABDOM == 1 |
+                          data_dengue_clinico$ALRM_LETAR == 1 |
+                          data_dengue_clinico$ALRM_HEPAT == 1 |
+                          data_dengue_clinico$ALRM_LIQ == 1 |
+                          data_dengue_clinico$GRAV_PULSO == 1 |
+                          data_dengue_clinico$GRAV_CONV == 1 |
+                          data_dengue_clinico$GRAV_ENCH == 1 |
+                          data_dengue_clinico$GRAV_INSUF == 1 |
+                          data_dengue_clinico$GRAV_TAQUI == 1 |
+                          data_dengue_clinico$GRAV_EXTRE == 1 |
+                          data_dengue_clinico$GRAV_HIPOT == 1 |
+                          data_dengue_clinico$GRAV_HEMAT == 1 |
+                          data_dengue_clinico$GRAV_MELEN == 1 |
+                          data_dengue_clinico$GRAV_METRO == 1 |
+                          data_dengue_clinico$GRAV_SANG == 1 |
+                          data_dengue_clinico$GRAV_AST == 1 |
+                          data_dengue_clinico$GRAV_MIOC == 1 |
+                          data_dengue_clinico$GRAV_CONSC == 1 |
+                          data_dengue_clinico$GRAV_ORGAO == 1 |
+                          data_dengue_clinico$MANI_HEMOR == 1 |
+                          data_dengue_clinico$EPISTAXE == 1 |
+                          data_dengue_clinico$GENGIVO == 1 |
+                          data_dengue_clinico$METRO == 1 |
+                          data_dengue_clinico$PETEQUIAS == 1 |
+                          data_dengue_clinico$HEMATURA == 1 |
+                          data_dengue_clinico$SANGRAM == 1)
+
+sinais_sintomas_clinico <- data_dengue_clinico %>% 
+  pivot_longer(cols = c ("NAUSEA", 
+                         "VOMITO",
+                         "MIALGIA",
+                         "ARTRALGIA",
+                         "CEFALEIA",
+                         "DOR_RETRO", 
+                         "PETEQUIAS", 
+                         "PETEQUIA_N", 
+                         "LACO", 
+                         "LEUCOPENIA", 
+                         "ALRM_HIPOT", 
+                         "ALRM_PLAQ", 
+                         "ALRM_VOM",
+                         "ALRM_SANG", 
+                         "ALRM_HEMAT", 
+                         "ALRM_ABDOM", 
+                         "ALRM_LETAR", 
+                         "ALRM_HEPAT", 
+                         "ALRM_LIQ", 
+                         "GRAV_PULSO", 
+                         "GRAV_CONV", 
+                         "GRAV_ENCH", 
+                         "GRAV_INSUF", 
+                         "GRAV_TAQUI", 
+                         "GRAV_EXTRE", 
+                         "GRAV_HIPOT", 
+                         "GRAV_HEMAT", 
+                         "GRAV_MELEN", 
+                         "GRAV_METRO", 
+                         "GRAV_SANG", 
+                         "GRAV_AST", 
+                         "GRAV_MIOC", 
+                         "GRAV_CONSC", 
+                         "GRAV_ORGAO", 
+                         "MANI_HEMOR", 
+                         "EPISTAXE", 
+                         "GENGIVO", 
+                         "METRO", 
+                         "PETEQUIAS", 
+                         "HEMATURA", 
+                         "SANGRAM"),
+               names_to = c("sintomas"),
+               values_to = "valores")  
+
+#filtrei somente quem tem sinais e sintomas
+sinais_sintomas_clinico <- filter(sinais_sintomas_clinico,
+                                  sinais_sintomas_clinico$valores == "1")                  
+
+#criei data.frame pra separar id que tem pelo menos e sinais e sintomas
+sinais <- table(sinais_sintomas_clinico$id_pessoa_dengue) %>% data.frame(.)
+sinais <- filter(sinais, sinais$Freq >= 2)
+sinais <- rename(sinais, id_pessoa_dengue = Var1)
+
+#leftjoin para saber quem tem pelo menos 2 ou mais sinais e sintomas
+data_dengue_clinico <- left_join(data_dengue_clinico, sinais, by = "id_pessoa_dengue", keep = FALSE)
+
+#retirei NA
+data_dengue_clinico <- filter(data_dengue_clinico, data_dengue_clinico$Freq >= "2")
+data_dengue_clinico <- subset(data_dengue_clinico, 
+                              select = -c(Freq))
+
+####retirar todos os laboratoriais para ficar somente os casos clínicos
+data_dengue_clinico <- filter(data_dengue_clinico, 
+                                    data_dengue_clinico$RESUL_PCR_ != "1" |
+                                      is.na(data_dengue_clinico$RESUL_PCR_))
+  
+ data_dengue_clinico <- filter(data_dengue_clinico, 
+                                    data_dengue_clinico$RESUL_SORO != "1" |
+                                      is.na(data_dengue_clinico$RESUL_SORO))
+
+data_dengue_clinico <- filter(data_dengue_clinico, 
+                                    data_dengue_clinico$RESUL_NS1 != "1" |
+                                      is.na(data_dengue_clinico$RESUL_NS1))
+  
+data_dengue_clinico <- filter(data_dengue_clinico, 
+                                    data_dengue_clinico$RESUL_VI_N != "1" |
+                                      is.na(data_dengue_clinico$RESUL_VI_N)) 
+  
+data_dengue_clinico <- filter(data_dengue_clinico, 
+                                    data_dengue_clinico$HISTOPA_N != "1" |
+                                      is.na(data_dengue_clinico$HISTOPA_N)) 
+
+data_dengue_clinico <- filter(data_dengue_clinico, 
+                                    data_dengue_clinico$IMUNOH_N != "1" |
+                                      is.na(data_dengue_clinico$IMUNOH_N))
+
+data_dengue_clinico <- filter(data_dengue_clinico, 
+                                    data_dengue_clinico$RESUL_PRNT != "1" |
+                                      is.na(data_dengue_clinico$RESUL_PRNT))
+
+#pelo guia de vigilância, clínico epidemiologico é: Na impossibilidade de 
+#realização de confirmação laboratorial específica ou para casos com
+#resultados laboratoriais inconclusivos, deve-se considerar a confirmação por vínculo epidemiológico
+#com um caso confirmado laboratorialmente, após avaliação da distribuição espacial dos casos
+#confirmados.
+
+data_dengue_clin_epidemiologico <- filter(data_dengue_clinico,
+                                          data_dengue_clinico$CRITERIO == "2")
 
 #Junção de confirmados dengue (laboratorial e clínico_epidemiológico)
-data_dengue_confirmados <- bind_rows(data_dengue_pcr, 
-                                     data_dengue_outros_positivos,
-                                     data_dengue_clin_epidemio)
+data_dengue_confirmados <- bind_rows(data_dengue_laboratorio, 
+                                     data_dengue_clin_epidemiologico)
 
 #após junção de linhas, retirar possíveis duplicidades
-id_pessoa_dengue2 <- paste(data_dengue_confirmados$DT_SIN_PRI, data_dengue_confirmados$id_pessoa_dengue)
-id_pessoa_dengue2 <- data.frame(id_pessoa_dengue2)
-data_dengue_confirmados <- mutate(data_dengue_confirmados, id_pessoa_dengue2)
-data_dengue_confirmados <- data_dengue_confirmados[!duplicated(data_dengue_confirmados$id_pessoa_dengue2), ]
+id_pessoa_dengue1 <- paste(data_dengue_confirmados$DT_SIN_PRI, data_dengue_confirmados$id_pessoa_dengue)
+id_pessoa_dengue1 <- data.frame(id_pessoa_dengue1)
+data_dengue_confirmados <- mutate(data_dengue_confirmados, id_pessoa_dengue1)
+data_dengue_confirmados <- data_dengue_confirmados[!duplicated(data_dengue_confirmados$id_pessoa_dengue1), ]
 data_dengue_confirmados <- subset(data_dengue_confirmados, 
-                                select = -c(id_pessoa_dengue2))
+                                select = -c(id_pessoa_dengue1))
 
 #regra de 90 dias para data_dengue_confirmados
 #mesmo id_pessoa só pode ter 4 tipos de dengue ao longo da vida
@@ -407,7 +571,7 @@ DT_dengue_pos_90_dias <- DT_dengue_90_dias_maior2 %>%
                 check1 = dplyr::if_else(diferenca >= 90, "True", "False"))
 
 DT_dengue_pos_90_dias <- DT_dengue_pos_90_dias %>% 
-  filter(DT_dengue_pos_90_dias$check == "True" | DT_dengue_pos_90_dias$check1 == "True")
+  filter(DT_dengue_pos_90_dias$check == "True", DT_dengue_pos_90_dias$check1 == "True")
 
 
 #unir os dados após aplicação da regra dos 90 dias
@@ -451,8 +615,41 @@ marc_dengue0 <- data.frame("confirmados")
 data_dengue_confirmados <- mutate(data_dengue_confirmados, marc_dengue0) 
 data_dengue_confirmados <- rename(data_dengue_confirmados, marcador = X.confirmados.)
 
-#grupo2 descartados_dengue (exame negativo e sem clínico epidemiológico)
-data_dengue_descartados <- filter(data_dengue, data_dengue$CLASSI_FIN == "5")
+#grupo2 descartados_dengue (caso suspeito, com exame negativo ou que não tem exame)
+data_dengue_descartados <- data_dengue_clinico %>% 
+                              filter(data_dengue_clinico$RESUL_PCR_ == 2 |
+                                      is.na(data_dengue_clinico$RESUL_PCR_))
+
+data_dengue_descartados <- data_dengue_descartados %>% 
+                            filter(data_dengue_descartados$RESUL_SORO == 2 |
+                                     is.na(data_dengue_descartados$RESUL_SORO))
+
+data_dengue_descartados <- data_dengue_descartados %>% 
+                            filter(data_dengue_descartados$RESUL_NS1 == 2 |
+                                     is.na(data_dengue_descartados$RESUL_NS1))
+
+data_dengue_descartados <- data_dengue_descartados %>% 
+                            filter(data_dengue_descartados$RESUL_VI_N == 2 |
+                                     is.na(data_dengue_descartados$RESUL_VI_N))
+
+data_dengue_descartados <- data_dengue_descartados %>% 
+                            filter(data_dengue_descartados$HISTOPA_N == 2 |
+                                     is.na(data_dengue_descartados$HISTOPA_N))
+
+data_dengue_descartados <- data_dengue_descartados %>% 
+                            filter(data_dengue_descartados$IMUNOH_N == 2 |
+                                     is.na(data_dengue_descartados$IMUNOH_N))
+
+data_dengue_descartados <- data_dengue_descartados %>% 
+                            filter(data_dengue_descartados$RESUL_PRNT == 2 |
+                                     is.na(data_dengue_descartados$RESUL_PRNT))
+
+id_pessoa_dengue2 <- paste(data_dengue_descartados$DT_SIN_PRI, data_dengue_descartados$id_pessoa_dengue)
+id_pessoa_dengue2 <- data.frame(id_pessoa_dengue2)
+data_dengue_descartados <- mutate(data_dengue_descartados, id_pessoa_dengue2)
+data_dengue_descartados <- data_dengue_descartados[!duplicated(data_dengue_descartados$id_pessoa_dengue2), ]
+data_dengue_descartados <- subset(data_dengue_descartados, 
+                                  select = -c(id_pessoa_dengue2))
 
 data_dengue_descartados <- subset(data_dengue_descartados, 
                                   select = -c(NU_NOTIFIC,
@@ -484,18 +681,14 @@ data_dengue_descartados <- mutate(data_dengue_descartados, marc_dengue1)
 data_dengue_descartados <- rename(data_dengue_descartados, marcador = X.descartados.)
 
 #grupo3 prováveis_dengue (todo mundo, menos os descartados)
-data_dengue_prov <- filter(data_dengue, data_dengue$CLASSI_FIN != "5")
-data_dengue_prov1 <- data_dengue %>% filter(is.na(data_dengue$CLASSI_FIN))
-
-data_dengue_provaveis <- bind_rows(data_dengue_prov,
-                                   data_dengue_prov1)
-
+data_dengue_provaveis <- bind_rows(data_dengue_clinico,
+                                   data_dengue_confirmados)
 id_pessoa_dengue3 <- paste(data_dengue_provaveis$DT_SIN_PRI, data_dengue_provaveis$id_pessoa_dengue)
 id_pessoa_dengue3 <- data.frame(id_pessoa_dengue3)
 data_dengue_provaveis <- mutate(data_dengue_provaveis, id_pessoa_dengue3)
 data_dengue_provaveis <- data_dengue_provaveis[!duplicated(data_dengue_provaveis$id_pessoa_dengue3), ]
 data_dengue_provaveis <- subset(data_dengue_provaveis, 
-                                select = -c(id_pessoa_dengue3))
+                                  select = -c(id_pessoa_dengue3))
 
 data_dengue_provaveis <- subset(data_dengue_provaveis, 
                                     select = -c(NU_NOTIFIC,
@@ -520,17 +713,25 @@ data_dengue_provaveis <- subset(data_dengue_provaveis,
                                                 NU_LOTE_V,
                                                 NU_LOTE_H,
                                                 IDENT_MICR,
-                                                id_pessoa_dengue))
+                                                id_pessoa_dengue,
+                                                marcador))
 
 marc_dengue2 <- data.frame("prováveis")
 data_dengue_provaveis <- mutate(data_dengue_provaveis, marc_dengue2)
 data_dengue_provaveis <- rename(data_dengue_provaveis, marcador = X.prováveis.)
 
 ############### CHIKUNGUNYA CONFIRMADOS, DESCARTADOS E PROVÁVEIS ###############
+#Chik_que possui a clínica
+data_chik_clinico <- filter(data_chik,
+                            data_chik$FEBRE == "1")
+
+data_chik_clinico <- filter(data_chik_clinico,
+                            data_chik_clinico$ARTRALGIA == "1" |
+                              data_chik_clinico$ARTRITE == "1")
 #grupo1 chik_confirmados
 #Chik_confirmado_laboratorial
-data_chik_pcr <- filter(data_chik, data_chik$RESUL_PCR_ == "1")
-data_chik_outros_positivos <-   filter(data_chik,
+data_chik_laboratorio <-   filter(data_chik,
+                                       data_chik$RESUL_PCR_ == "1" |
                                        data_chik$RES_CHIKS1 == "1" |
                                        data_chik$RES_CHIKS2 == "1" |
                                        data_chik$RESUL_PRNT == "1" |
@@ -540,13 +741,12 @@ data_chik_outros_positivos <-   filter(data_chik,
                                        data_chik$IMUNOH_N == "1")
 
 #Chik_clínico_epidemiológico
-data_chik_clin_epidemio <- filter(data_chik,
-                                  data_chik$CRITERIO =="2")
+data_chik_clin_epidemiologico <- filter(data_chik_clinico,
+                                        data_chik_clinico$CRITERIO =="2")
 
 #confirmados_chik (laboratorial + clínico epidemiológico)
-data_chik_confirmados <- bind_rows(data_chik_pcr, 
-                                     data_chik_outros_positivos,
-                                     data_chik_clin_epidemio)
+data_chik_confirmados <- bind_rows(data_chik_laboratorio, 
+                                   data_chik_clin_epidemiologico)
 
 #após junção de linhas, retirar possíveis duplicidades
 id_pessoa_chik1 <- paste(data_chik_confirmados$DT_SIN_PRI, data_chik_confirmados$id_pessoa_chik)
@@ -581,13 +781,45 @@ data_chik_confirmados <- subset(data_chik_confirmados,
                                             IDENT_MICR,
                                             id_pessoa_chik))
 
-
 marc_chik0 <- data.frame("confirmados")
 data_chik_confirmados <- mutate(data_chik_confirmados, marc_chik0)
 data_chik_confirmados <- rename(data_chik_confirmados, marcador = X.confirmados.)
 
-#grupo2 descartados_chik (exame negativo e sem clínico epidemiológico)
-data_chik_descartados <- filter(data_chik, data_chik$CLASSI_FIN == "5")
+#grupo2 descartados_chik (exame negativo ou sem exame)
+data_chik_descartados <- data_chik_clinico %>% 
+                            filter(data_chik_clinico$RESUL_PCR_ == 2 |
+                              is.na(data_chik_clinico$RESUL_PCR_))
+
+data_chik_descartados <- data_chik_descartados %>% 
+                            filter(data_chik_descartados$RESUL_SORO == 2 |
+                              is.na(data_chik_descartados$RESUL_SORO))
+
+data_chik_descartados <- data_chik_descartados %>% 
+                            filter(data_chik_descartados$RESUL_NS1 == 2 |
+                                     is.na(data_chik_descartados$RESUL_NS1))
+
+data_chik_descartados <- data_chik_descartados %>% 
+                              filter(data_chik_descartados$RESUL_VI_N == 2 |
+                                       is.na(data_chik_descartados$RESUL_VI_N))
+
+data_chik_descartados <- data_chik_descartados %>% 
+                            filter(data_chik_descartados$HISTOPA_N == 2 |
+                                     is.na(data_chik_descartados$HISTOPA_N))
+
+data_chik_descartados <- data_chik_descartados %>% 
+                            filter(data_chik_descartados$IMUNOH_N == 2 |
+                                     is.na(data_chik_descartados$IMUNOH_N))
+
+data_chik_descartados <- data_chik_descartados %>% 
+                              filter(data_chik_descartados$RESUL_PRNT == 2 |
+                                       is.na(data_chik_descartados$RESUL_PRNT))
+
+id_pessoa_chik2 <- paste(data_chik_descartados$DT_SIN_PRI, data_chik_descartados$id_pessoa_chik)
+id_pessoa_chik2 <- data.frame(id_pessoa_chik2)
+data_chik_descartados <- mutate(data_chik_descartados, id_pessoa_chik2)
+data_chik_descartados <- data_chik_descartados[!duplicated(data_chik_descartados$id_pessoa_chik2), ]
+data_chik_descartados <- subset(data_chik_descartados, 
+                                select = -c(id_pessoa_chik2))
 
 data_chik_descartados <- subset(data_chik_descartados, 
                                 select = -c(NU_NOTIFIC,
@@ -619,11 +851,8 @@ data_chik_descartados <- mutate(data_chik_descartados, marc_chik1)
 data_chik_descartados <- rename(data_chik_descartados, marcador = X.descartados.)
 
 #grupo3 prováveis_chik (todo mundo, menos os descartados)
-data_chik_prov <- filter(data_chik, data_chik$CLASSI_FIN != "5")
-data_chik_prov1 <- data_chik %>% filter(is.na(data_chik$CLASSI_FIN))
-
-data_chik_provaveis <- bind_rows(data_chik_prov,
-                                 data_chik_prov1)
+data_chik_provaveis <- bind_rows(data_chik_clinico,
+                                 data_chik_confirmados)
 
 #após junção de linhas, retirar possíveis duplicidades
 id_pessoa_chik3<- paste(data_chik_provaveis$DT_SIN_PRI, data_chik_provaveis$id_pessoa_chik)
@@ -632,10 +861,6 @@ data_chik_provaveis <- mutate(data_chik_provaveis, id_pessoa_chik3)
 data_chik_provaveis <- data_chik_provaveis[!duplicated(data_chik_provaveis$id_pessoa_chik3), ]
 data_chik_provaveis <- subset(data_chik_provaveis, 
                               select = -c(id_pessoa_chik3))
-
-marc_chik2 <- data.frame("prováveis")
-data_chik_provaveis <- mutate(data_chik_provaveis, marc_chik2)
-data_chik_provaveis <- rename(data_chik_provaveis, marcador = X.prováveis.)
 
 data_chik_provaveis <- subset(data_chik_provaveis, 
                            select = -c(NU_NOTIFIC,
@@ -660,13 +885,25 @@ data_chik_provaveis <- subset(data_chik_provaveis,
                                       NU_LOTE_V,
                                       NU_LOTE_H,
                                       IDENT_MICR,
-                                      id_pessoa_chik))
+                                      id_pessoa_chik,
+                                      marcador))
+
+
+marc_chik2 <- data.frame("prováveis")
+data_chik_provaveis <- mutate(data_chik_provaveis, marc_chik2)
+data_chik_provaveis <- rename(data_chik_provaveis, marcador = X.prováveis.)
 
 ##################### ZIKA CONFIRMADOS, DESCARTADOS E PROVÁVEIS ################
 #grupo1 confirmados_zika
 data_zika_confirmados <- filter(data_zika, 
                                 data_zika$CLASSI_FIN == "1")
-data_zika_confirmados <- data_zika_confirmados[!duplicated(data_zika_confirmados$id_pessoa_zika), ]
+#retirar duplicidades
+id_pessoa_zik1<- paste(data_zika_confirmados$DT_SIN_PRI, data_zika_confirmados$id_pessoa_zika)
+id_pessoa_zik1 <- data.frame(id_pessoa_zik1)
+data_zika_confirmados <- mutate(data_zika_confirmados, id_pessoa_zik1)
+data_zika_confirmados <- data_zika_confirmados[!duplicated(data_zika_confirmados$id_pessoa_zik1), ]
+data_zika_confirmados <- subset(data_zika_confirmados, 
+                              select = -c(id_pessoa_zik1))
 
 data_zika_confirmados <- subset(data_zika_confirmados, 
                               select = -c(NU_NOTIFIC,
@@ -700,6 +937,14 @@ data_zika_confirmados <- rename(data_zika_confirmados, marcador = X.confirmados.
 data_zika_descartados<-  filter(data_zika, 
                                 data_zika$CLASSI_FIN == "2")
 
+#retirar duplicidades
+id_pessoa_zik2 <- paste(data_zika_descartados$DT_SIN_PRI, data_zika_descartados$id_pessoa_zika)
+id_pessoa_zik2 <- data.frame(id_pessoa_zik2)
+data_zika_descartados <- mutate(data_zika_descartados, id_pessoa_zik2)
+data_zika_descartados <- data_zika_descartados[!duplicated(data_zika_descartados$id_pessoa_zik2), ]
+data_zika_descartados <- subset(data_zika_descartados, 
+                                select = -c(id_pessoa_zik2))
+
 data_zika_descartados <- subset(data_zika_descartados, 
                                 select = -c(NU_NOTIFIC,
                                             ID_REGIONA,
@@ -728,14 +973,6 @@ marc_zika1 <- data.frame("descartados")
 data_zika_descartados <- mutate(data_zika_descartados, marc_zika1)
 data_zika_descartados <- rename(data_zika_descartados, marcador = X.descartados.)
 
-#após junção de linhas, retirar possíveis duplicidades
-id_pessoa_zika2 <- paste(data_zika_descartados$DT_SIN_PRI, data_zika_descartados$id_pessoa_zika)
-id_pessoa_zika2 <- data.frame(id_pessoa_zika2)
-data_zika_descartados <- mutate(data_zika_descartados, id_pessoa_zika2)
-data_zika_descartados <- data_zika_descartados[!duplicated(data_zika_descartados$id_pessoa_zika2), ]
-data_zika_descartados <- subset(data_zika_descartados, 
-                                select = -c(id_pessoa_zika2))
-
 #grupo3 prováveis_zika (todo mundo, menos os descartados)
 data_zika_prov <- filter(data_zika, 
                               data_zika$CLASSI_FIN != "2")
@@ -744,7 +981,15 @@ data_zika_prov1 <- data_zika %>% filter(is.na(data_zika$CLASSI_FIN))
 
 data_zika_provaveis <- bind_rows(data_zika_prov,
                                  data_zika_prov1)
-  
+
+#retirar duplicidades
+id_pessoa_zik3 <- paste(data_zika_provaveis$DT_SIN_PRI, data_zika_provaveis$id_pessoa_zika)
+id_pessoa_zik3 <- data.frame(id_pessoa_zik3)
+data_zika_provaveis <- mutate(data_zika_provaveis, id_pessoa_zik3)
+data_zika_provaveis <- data_zika_provaveis[!duplicated(data_zika_provaveis$id_pessoa_zik3), ]
+data_zika_provaveis <- subset(data_zika_provaveis, 
+                                select = -c(id_pessoa_zik3))
+
 marc_zik2 <- data.frame("prováveis")
 data_zika_provaveis <- mutate(data_zika_provaveis, marc_zik2)
 data_zika_provaveis <- rename(data_zika_provaveis, marcador = X.prováveis.)
@@ -772,6 +1017,84 @@ data_zika_provaveis <- subset(data_zika_provaveis,
                                               IDENT_MICR,
                                               id_pessoa_zika))
 
+##################### ÓBITOS ARBOVIROSES #################################
+#óbitos confirmados
+#dengue
+#classificação 10 ou 11 ou 12
+#criterio 1 ou 2
+#evolução 2
+#data do óbito e encerramento
+
+#chikungunya
+#classificação 13
+#criterio 1 ou 2
+#evolução 2
+#data do óbito e encerramento
+
+#zika
+#classificação 1
+#criterio 1
+#evolução 2
+#data de óbito e data do encerramento
+
+#óbitos em investigação
+#dengue
+#classificação 10 ou 11 ou 12
+#criterio 1 ou 2 ou 3
+#evolução 4
+#data do óbito 
+
+#chikungunya
+#classificação 13
+#criterio 1 ou 2 ou 3
+#evolução 4
+#data do óbito 
+
+#zika
+#classificação todo ignorado
+#criterio todo ignorado
+#evolução todo ignorado ou em branco e data do óbito
+
+#óbitos descartados
+#dengue
+#classificação 10 ou 11 ou 12
+#criterio 1 ou 2
+#evolução 3
+#data do óbito e encerramento
+
+#chikungunya
+#classificação 13
+#criterio 1 ou 2
+#evolução 3
+#data do óbito e encerramento
+
+#zika
+#classificação 2
+#criterio 1 ou 2
+#evolução 3
+#data do óbito e data do encerramento
+
+
+#inconsistências
+#início de sintomas diferente ok
+#notificados sem a clínica (fazer antijoin no data original)
+#gestante sexo masculino
+#se for confirmado, mas não tiver classificação 10, 11 ou 12 (para dengue)
+#se for confirmado, mas não tiver classificação 13 (para chikungunya)
+#se for confirmado, mas tiver criterio 3
+#sinais verificar depois
+# se classificação for 11, tem que ter 
+#preenchimento da variavel 68, 69
+# se classificação for 12, tem que ter 
+#preenchimento da variavel 70 e 71
+#se tiver um exame laboratorial confirmado, preencher varivel 63 com 1(laboratório)
+#se tiver classificação 5 (descartado), sem exame 
+#se tiver classificação 5 (descartado), sem sinais e sintomas
+#se tiver sinais e sintomas, sem classificação (verificar definição de caso)
+
+#se eu tiver 
+
+
 ###################################### saídas ##################################
 ##saidas #nome da aba = #nome do objeto
 export(list(dengue_confirmados = data_dengue_confirmados,
@@ -785,6 +1108,7 @@ export(list(dengue_confirmados = data_dengue_confirmados,
             zika_provaveis = data_zika_provaveis),
        file = "C:/Users/NDTA.Dses01213518/Desktop/Azul BE_limpo/Azul_dados limpos_para_boletim_arbo/Para_boletim_arbo.xlsx")
 
+#alterar diretório
 write.csv(data_dengue_menor_2007, "C:/Users/NDTA.Dses01213518/Desktop/Azul BE_limpo/Inconsistências de início de sintomas/dengue_menor_2007.csv", row.names = FALSE)
 write.csv(data_chik_menor_2016, "C:/Users/NDTA.Dses01213518/Desktop/Azul BE_limpo/Inconsistências de início de sintomas/chik_menor_2016.csv", row.names = FALSE)
 write.csv(data_zika_menor_2016, "C:/Users/NDTA.Dses01213518/Desktop/Azul BE_limpo/Inconsistências de início de sintomas/zika_menor_2016.csv", row.names = FALSE)
