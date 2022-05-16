@@ -82,12 +82,8 @@ data_chik$RESUL_VI_N <- as.numeric(levels(data_chik$RESUL_PCR_))[data_chik$RESUL
 data_chik$HISTOPA_N <- as.numeric(levels(data_chik$RESUL_PCR_))[data_chik$RESUL_PCR_]
 data_chik$IMUNOH_N <- as.numeric(levels(data_chik$RESUL_PCR_))[data_chik$RESUL_PCR_]
 
-
-
-
 data_chik[is.na(data_chik)] <- 0
 data_zika[is.na(data_zika)] <- 0
-
 
 #ajustar data
 data_dengue$DT_SIN_PRI <- as.Date(data_dengue$DT_SIN_PRI, format="%d-%m-%Y")
@@ -586,8 +582,7 @@ data_dengue_pos_90_dias <- bind_rows(DT_dengue_90_dias_igual1, DT_dengue_pos_90_
 data_dengue_confirmados <- data_dengue_pos_90_dias
 
 data_dengue_confirmados <- subset(data_dengue_confirmados, 
-                             select = -c(NU_NOTIFIC,
-                                         ID_REGIONA,
+                             select = -c(ID_REGIONA,
                                          FONETICA_N,
                                          SOUNDEX,
                                          ID_CNS_SUS,
@@ -652,8 +647,7 @@ data_dengue_descartados <- subset(data_dengue_descartados,
                                   select = -c(id_pessoa_dengue2))
 
 data_dengue_descartados <- subset(data_dengue_descartados, 
-                                  select = -c(NU_NOTIFIC,
-                                              ID_REGIONA,
+                                  select = -c(ID_REGIONA,
                                               FONETICA_N,
                                               SOUNDEX,
                                               ID_CNS_SUS,
@@ -691,8 +685,7 @@ data_dengue_provaveis <- subset(data_dengue_provaveis,
                                   select = -c(id_pessoa_dengue3))
 
 data_dengue_provaveis <- subset(data_dengue_provaveis, 
-                                    select = -c(NU_NOTIFIC,
-                                                ID_REGIONA,
+                                    select = -c(ID_REGIONA,
                                                 FONETICA_N,
                                                 SOUNDEX,
                                                 ID_CNS_SUS,
@@ -757,8 +750,7 @@ data_chik_confirmados <- subset(data_chik_confirmados,
                                 select = -c(id_pessoa_chik1))
 
 data_chik_confirmados <- subset(data_chik_confirmados, 
-                                select = -c(NU_NOTIFIC,
-                                            ID_REGIONA,
+                                select = -c(ID_REGIONA,
                                             FONETICA_N,
                                             SOUNDEX,
                                             ID_CNS_SUS,
@@ -822,8 +814,7 @@ data_chik_descartados <- subset(data_chik_descartados,
                                 select = -c(id_pessoa_chik2))
 
 data_chik_descartados <- subset(data_chik_descartados, 
-                                select = -c(NU_NOTIFIC,
-                                            ID_REGIONA,
+                                select = -c(ID_REGIONA,
                                             FONETICA_N,
                                             SOUNDEX,
                                             ID_CNS_SUS,
@@ -863,8 +854,7 @@ data_chik_provaveis <- subset(data_chik_provaveis,
                               select = -c(id_pessoa_chik3))
 
 data_chik_provaveis <- subset(data_chik_provaveis, 
-                           select = -c(NU_NOTIFIC,
-                                      ID_REGIONA,
+                           select = -c(ID_REGIONA,
                                       FONETICA_N,
                                       SOUNDEX,
                                       ID_CNS_SUS,
@@ -906,8 +896,7 @@ data_zika_confirmados <- subset(data_zika_confirmados,
                               select = -c(id_pessoa_zik1))
 
 data_zika_confirmados <- subset(data_zika_confirmados, 
-                              select = -c(NU_NOTIFIC,
-                                          ID_REGIONA,
+                              select = -c(ID_REGIONA,
                                           FONETICA_N,
                                           SOUNDEX,
                                           ID_CNS_SUS,
@@ -946,8 +935,7 @@ data_zika_descartados <- subset(data_zika_descartados,
                                 select = -c(id_pessoa_zik2))
 
 data_zika_descartados <- subset(data_zika_descartados, 
-                                select = -c(NU_NOTIFIC,
-                                            ID_REGIONA,
+                                select = -c(ID_REGIONA,
                                             FONETICA_N,
                                             SOUNDEX,
                                             ID_CNS_SUS,
@@ -994,8 +982,7 @@ marc_zik2 <- data.frame("prováveis")
 data_zika_provaveis <- mutate(data_zika_provaveis, marc_zik2)
 data_zika_provaveis <- rename(data_zika_provaveis, marcador = X.prováveis.)
 data_zika_provaveis <- subset(data_zika_provaveis, 
-                                  select = -c(NU_NOTIFIC,
-                                              ID_REGIONA,
+                                  select = -c(ID_REGIONA,
                                               FONETICA_N,
                                               SOUNDEX,
                                               ID_CNS_SUS,
@@ -1018,99 +1005,298 @@ data_zika_provaveis <- subset(data_zika_provaveis,
                                               id_pessoa_zika))
 
 ##################### ÓBITOS ARBOVIROSES #################################
-#óbitos confirmados
+#óbitos confirmados dengue
+data_dengue_obito_confirmados <- filter(data_dengue_confirmados,
+                                  data_dengue_confirmados$EVOLUCAO == "2")
+
+marc_dengue3 <- data.frame("confirmados")
+data_dengue_obito_confirmados <- mutate(data_dengue_obito_confirmados, marc_dengue3)
+data_dengue_obito_confirmados <- rename(data_dengue_obito_confirmados, obitos = X.confirmados.)
+
+#óbitos em investigação dengue
+data_dengue_inv_obito1 <- filter(data_dengue_provaveis,
+                                data_dengue_provaveis$EVOLUCAO == "4")
+
+data_dengue_inv_obito2 <- filter(data_dengue_provaveis,
+                                 data_dengue_provaveis$EVOLUCAO == "9") 
+
+data_dengue_inv_obito2 <- data_dengue_inv_obito2 %>% 
+                        filter(! is.na(data_dengue_inv_obito2$DT_OBITO))
+
+data_dengue_inv_obito <- bind_rows(data_dengue_inv_obito1,
+                                   data_dengue_inv_obito2)
+
+marc_dengue4 <- data.frame("Em investigação")
+data_dengue_inv_obito <- mutate(data_dengue_inv_obito, marc_dengue4)
+data_dengue_inv_obito <- rename(data_dengue_inv_obito, obitos = X.Em.investigação.)
+
+data_dengue_obitos <- bind_rows(data_dengue_obito_confirmados,
+                                data_dengue_inv_obito)
+
+#óbitos confirmados chik
+data_chik_obito_confirmados <- filter(data_chik_confirmados,
+                          data_chik_confirmados$EVOLUCAO == "2")
+
+marc_chik3 <- data.frame("confirmados")
+data_chik_obito_confirmados <- mutate(data_chik_obito_confirmados, marc_chik3)
+data_chik_obito_confirmados <- rename(data_chik_obito_confirmados, obitos = X.confirmados.)
+
+#óbitos em investigação chik
+data_chik_inv_obito1 <- filter(data_chik_provaveis,
+                              data_chik_provaveis$EVOLUCAO == "4")
+
+data_chik_inv_obito2 <- filter(data_chik_provaveis,
+                               data_chik_provaveis$EVOLUCAO == "9")
+
+data_chik_inv_obito2 <- data_chik_inv_obito2 %>% 
+                        filter(! is.na(data_chik_inv_obito2$DT_OBITO))
+
+data_chik_inv_obito <- bind_rows(data_chik_inv_obito1,
+                                 data_chik_inv_obito2)
+
+marc_chik4 <- data.frame("Em investigação")
+data_chik_inv_obito <- mutate(data_chik_inv_obito, marc_chik4)
+data_chik_inv_obito <- rename(data_chik_inv_obito, obitos = X.Em.investigação.)
+
+data_chik_obitos <- bind_rows(data_chik_obito_confirmados,
+                              data_chik_inv_obito)
+
+#óbitos confirmados zika
+data_zika_obito_confirmados <- filter(data_zika_confirmados,
+                          data_zika_confirmados$EVOLUCAO == "2")
+
+marc_zika3 <- data.frame("confirmados")
+data_zika_obito_confirmados <- mutate(data_zika_obito_confirmados, marc_zika3)
+data_zika_obito_confirmados <- rename(data_zika_obito_confirmados, obitos = X.confirmados.)
+
+#óbitos em investigação zika
+data_zika_inv_obito <- filter(data_zika_provaveis,
+                              data_zika_provaveis$EVOLUCAO == "9")
+
+data_zika_inv_obito <- data_zika_inv_obito %>% 
+                        filter(! is.na(data_zika_inv_obito$DT_OBITO))
+
+marc_zika4 <- data.frame("Em investigação")
+data_zika_inv_obito <- mutate(data_zika_inv_obito, marc_zika4)
+data_zika_inv_obito <- rename(data_zika_inv_obito, obitos = X.Em.investigação.)
+
+data_zika_obitos <- bind_rows(data_zika_obito_confirmados,
+                              data_zika_inv_obito)
+
+###########################JUNÇÃO POR DEFINIÇÃO DE CADA AGRAVO #################
 #dengue
-#classificação 10 ou 11 ou 12
-#criterio 1 ou 2
-#evolução 2
-#data do óbito e encerramento
-
-#chikungunya
-#classificação 13
-#criterio 1 ou 2
-#evolução 2
-#data do óbito e encerramento
-
+dengue_ <- bind_rows(data_dengue_confirmados,
+                     data_dengue_descartados,
+                     data_dengue_provaveis)
+#chik
+chikungunya_ <- bind_rows(data_chik_confirmados,
+                          data_chik_descartados,
+                          data_chik_provaveis)
 #zika
-#classificação 1
-#criterio 1
-#evolução 2
-#data de óbito e data do encerramento
+zika_ <- bind_rows(data_zika_confirmados,
+                   data_zika_descartados,
+                   data_zika_provaveis)
 
-#óbitos em investigação
-#dengue
-#classificação 10 ou 11 ou 12
-#criterio 1 ou 2 ou 3
-#evolução 4
-#data do óbito 
+############################## INCONSISTÊNCIAS ################################
+#data de início de sintomas fora do padrão
+#criado objeto em etapa inicial ao verificar registros válidos
+data_dengue_menor_2007 <- filter(data_dengue, data_dengue$DT_SIN_PRI < 2007)
+data_chik_menor_2016 <- filter(data_chik, data_chik$DT_SIN_PRI < 2016)
+data_zika_menor_2016 <- filter(data_zika, data_zika$DT_SIN_PRI < 2016)
 
-#chikungunya
-#classificação 13
-#criterio 1 ou 2 ou 3
-#evolução 4
-#data do óbito 
-
-#zika
-#classificação todo ignorado
-#criterio todo ignorado
-#evolução todo ignorado ou em branco e data do óbito
-
-#óbitos descartados
-#dengue
-#classificação 10 ou 11 ou 12
-#criterio 1 ou 2
-#evolução 3
-#data do óbito e encerramento
-
-#chikungunya
-#classificação 13
-#criterio 1 ou 2
-#evolução 3
-#data do óbito e encerramento
-
-#zika
-#classificação 2
-#criterio 1 ou 2
-#evolução 3
-#data do óbito e data do encerramento
-
-
-#inconsistências
-#início de sintomas diferente ok
-#notificados sem a clínica (fazer antijoin no data original)
-#gestante sexo masculino
 #se for confirmado, mas não tiver classificação 10, 11 ou 12 (para dengue)
 #se for confirmado, mas não tiver classificação 13 (para chikungunya)
-#se for confirmado, mas tiver criterio 3
-#sinais verificar depois
-# se classificação for 11, tem que ter 
-#preenchimento da variavel 68, 69
-# se classificação for 12, tem que ter 
-#preenchimento da variavel 70 e 71
-#se tiver um exame laboratorial confirmado, preencher varivel 63 com 1(laboratório)
+incon_dengue_classificacao <- filter(data_dengue_confirmados,
+                                     data_dengue_confirmados$CLASSI_FIN != 10)
+incon_dengue_classificacao <- filter(data_dengue_confirmados,
+                                     data_dengue_confirmados$CLASSI_FIN != 11)
+incon_dengue_classificacao <- filter(data_dengue_confirmados,
+                                     data_dengue_confirmados$CLASSI_FIN != 12)
+incon_chik_classificacao <- filter(data_chik_confirmados,
+                                   data_chik_confirmados$CLASSI_FIN != 13)
+
+#se tiver laboratorio, mas tiver criterio diferente de laboratorio
+incon_dengue_criterio <- filter(data_dengue_laboratorio,
+                                data_dengue_laboratorio$CRITERIO != "1")
+incon_chik_criterio <- filter(data_chik_laboratorio,
+                                data_chik_laboratorio$CRITERIO != "1")
+
+#gestante com sexo masculino
+incon_dengue_gestante <- filter(dengue_,
+                                dengue_$CS_SEXO == "M")
+
+incon_dengue_gestante <- filter(incon_dengue_gestante,
+                                incon_dengue_gestante$CS_GESTANTE == "1" |
+                                incon_dengue_gestante$CS_GESTANTE == "2" |
+                                incon_dengue_gestante$CS_GESTANTE == "3" |
+                                incon_dengue_gestante$CS_GESTANTE == "4")
+
+incon_chik_gestante <- filter(chikungunya_,
+                              chikungunya_$CS_SEXO == "M")
+
+incon_chik_gestante <- filter(incon_chik_gestante,
+                              incon_chik_gestante$CS_GESTANTE == "1" |
+                              incon_chik_gestante$CS_GESTANTE == "2" |
+                              incon_chik_gestante$CS_GESTANTE == "3" |
+                              incon_chik_gestante$CS_GESTANTE == "4")
+
+incon_zika_gestante <- filter(zika_,
+                              zika_$CS_SEXO == "M")
+
+incon_zika_gestante <- filter(incon_zika_gestante,
+                              incon_zika_gestante$CS_GESTANTE == "1" |
+                              incon_zika_gestante$CS_GESTANTE == "2" |
+                              incon_zika_gestante$CS_GESTANTE == "3" |
+                              incon_zika_gestante$CS_GESTANTE == "4")
+                                  
+#marcou dengue sinais de alarme na classificação, mas não marcaram sinais de alarme dengue (68)
+incon_dengue_alarme <- filter(dengue_,
+                             dengue_$CLASSI_FIN == "11")
+
+incon_dengue_alarme <- filter(incon_dengue_alarme,
+                             incon_dengue_alarme$ALRM_HIPOT != 1)
+incon_dengue_alarme <- filter(incon_dengue_alarme,
+                              incon_dengue_alarme$ALRM_PLAQ != 1)
+incon_dengue_alarme <- filter(incon_dengue_alarme,
+                              incon_dengue_alarme$ALRM_VOM != 1)
+incon_dengue_alarme <- filter(incon_dengue_alarme,
+                              incon_dengue_alarme$ALRM_SANG != 1)
+incon_dengue_alarme <- filter(incon_dengue_alarme,
+                              incon_dengue_alarme$ALRM_HEMAT != 1)
+incon_dengue_alarme <- filter(incon_dengue_alarme,
+                              incon_dengue_alarme$ALRM_ABDOM != 1)
+incon_dengue_alarme <- filter(incon_dengue_alarme,
+                              incon_dengue_alarme$ALRM_LETAR != 1)
+incon_dengue_alarme <- filter(incon_dengue_alarme,
+                              incon_dengue_alarme$ALRM_HEPAT != 1)
+incon_dengue_alarme <- filter(incon_dengue_alarme,
+                              incon_dengue_alarme$ALRM_LIQ != 1)
+
+#marcou dengue grave na classificação, mas não marcaram sinais de alarme dengue (70)                              
+incon_dengue_grave <- filter(dengue_,
+                             dengue_$CLASSI_FIN == "12")
+  
+incon_dengue_grave <- filter(incon_dengue_grave,
+                              incon_dengue_grave$GRAV_PULSO != 1)
+incon_dengue_grave <- filter(incon_dengue_grave,
+                             incon_dengue_grave$GRAV_CONV != 1)
+incon_dengue_grave <- filter(incon_dengue_grave,
+                             incon_dengue_grave$GRAV_ENCH != 1)
+incon_dengue_grave <- filter(incon_dengue_grave,
+                             incon_dengue_grave$GRAV_INSUF != 1)
+incon_dengue_grave <- filter(incon_dengue_grave,
+                             incon_dengue_grave$GRAV_TAQUI != 1)
+incon_dengue_grave <- filter(incon_dengue_grave,
+                             incon_dengue_grave$GRAV_EXTRE != 1)
+incon_dengue_grave <- filter(incon_dengue_grave,
+                             incon_dengue_grave$GRAV_HIPOT != 1)
+incon_dengue_grave <- filter(incon_dengue_grave,
+                             incon_dengue_grave$GRAV_HEMAT != 1)
+incon_dengue_grave <- filter(incon_dengue_grave,
+                             incon_dengue_grave$GRAV_MELEN != 1)
+incon_dengue_grave <- filter(incon_dengue_grave,
+                             incon_dengue_grave$GRAV_METRO != 1)
+incon_dengue_grave <- filter(incon_dengue_grave,
+                             incon_dengue_grave$GRAV_SANG != 1)
+incon_dengue_grave <- filter(incon_dengue_grave,
+                             incon_dengue_grave$GRAV_AST != 1)
+incon_dengue_grave <- filter(incon_dengue_grave,
+                             incon_dengue_grave$GRAV_MIOC != 1)
+incon_dengue_grave <- filter(incon_dengue_grave,
+                             incon_dengue_grave$GRAV_CONSC != 1)
+incon_dengue_grave <- filter(incon_dengue_grave,
+                             incon_dengue_grave$GRAV_MIOC != 1)
+incon_dengue_grave <- filter(incon_dengue_grave,
+                             incon_dengue_grave$GRAV_ORGAO != 1)
+incon_dengue_grave <- filter(incon_dengue_grave,
+                             incon_dengue_grave$MANI_HEMOR != 1)
+incon_dengue_grave <- filter(incon_dengue_grave,
+                             incon_dengue_grave$EPISTAXE != 1)
+incon_dengue_grave <- filter(incon_dengue_grave,
+                             incon_dengue_grave$GENGIVO != 1)
+incon_dengue_grave <- filter(incon_dengue_grave,
+                             incon_dengue_grave$METRO != 1)
+incon_dengue_grave <- filter(incon_dengue_grave,
+                             incon_dengue_grave$PETEQUIAS != 1)
+incon_dengue_grave <- filter(incon_dengue_grave,
+                             incon_dengue_grave$HEMATURA != 1)
+incon_dengue_grave <- filter(incon_dengue_grave,
+                             incon_dengue_grave$SANGRAM != 1)
 #se tiver classificação 5 (descartado), sem exame 
-#se tiver classificação 5 (descartado), sem sinais e sintomas
-#se tiver sinais e sintomas, sem classificação (verificar definição de caso)
+incon_dengue_descartado <- filter(dengue_,
+                                  dengue_$CLASSI_FIN == 5)
+incon_dengue_descartado <- filter(incon_dengue_descartado,
+                                  incon_dengue_descartado$RESUL_PCR_ != 2)
+incon_dengue_descartado <- filter(incon_dengue_descartado,
+                                  incon_dengue_descartado$RESUL_SORO != 2)
+incon_dengue_descartado <- filter(incon_dengue_descartado,
+                                  incon_dengue_descartado$RESUL_NS1 != 2)
+incon_dengue_descartado <- filter(incon_dengue_descartado,
+                                  incon_dengue_descartado$RESUL_VI_N != 2)
+incon_dengue_descartado <- filter(incon_dengue_descartado,
+                                  incon_dengue_descartado$HISTOPA_N != 2)
+incon_dengue_descartado <- filter(incon_dengue_descartado,
+                                  incon_dengue_descartado$IMUNOH_N != 2)
+incon_dengue_descartado <- filter(incon_dengue_descartado,
+                                  incon_dengue_descartado$RESUL_PRNT != 2)
 
-#se eu tiver 
+incon_chik_descartado <- filter(chikungunya_,
+                                chikungunya_$CLASSI_FIN == 5)
+incon_chik_descartado <- filter(incon_chik_descartado,
+                                incon_chik_descartado$RESUL_PCR_ != 2)
+incon_chik_descartado <- filter(incon_chik_descartado,
+                                incon_chik_descartado$RESUL_SORO != 2)
+incon_chik_descartado <- filter(incon_chik_descartado,
+                                incon_chik_descartado$RESUL_NS1 != 2)
+incon_chik_descartado <- filter(incon_chik_descartado,
+                                incon_chik_descartado$RESUL_VI_N != 2)
+incon_chik_descartado <- filter(incon_chik_descartado,
+                                incon_chik_descartado$HISTOPA_N != 2)
+incon_chik_descartado <- filter(incon_chik_descartado,
+                                incon_chik_descartado$IMUNOH_N != 2)
+incon_chik_descartado <- filter(incon_chik_descartado,
+                                incon_chik_descartado$RESUL_PRNT != 2)
 
+#inconsistências óbito dengue
+incons_dengue_obito <- filter(data_dengue_confirmados,
+                                data_dengue_confirmados$EVOLUCAO == "3")
+#inconsistências óbito chik
+incons_chik_obito <- filter(data_chik_confirmados,
+                            data_chik_confirmados$EVOLUCAO == "3")
+#inconsistências óbito zika
+incons_zika_obito <- filter(data_zika_confirmados,
+                            data_zika_confirmados$EVOLUCAO == "3")
+
+#notificados sem a clínica e sem laboratorio 
+incon_dengue_sem_suspeita <- anti_join(data_dengue, dengue_, by = "NU_NOTIFIC")
+incon_chik_sem_suspeita <- anti_join(data_chik, chikungunya_, by = "NU_NOTIFIC")
 
 ###################################### saídas ##################################
 ##saidas #nome da aba = #nome do objeto
-export(list(dengue_confirmados = data_dengue_confirmados,
-            dengue_descartados = data_dengue_descartados,
-            dengue_provaveis = data_dengue_provaveis,
-            chik_confirmados = data_chik_confirmados,
-            chik_descartados = data_chik_descartados,
-            chik_provaveis = data_chik_provaveis,
-            zika_confirmados = data_zika_confirmados,
-            zika_descartados = data_zika_descartados,
-            zika_provaveis = data_zika_provaveis),
-       file = "C:/Users/NDTA.Dses01213518/Desktop/Azul BE_limpo/Azul_dados limpos_para_boletim_arbo/Para_boletim_arbo.xlsx")
-
-#alterar diretório
-write.csv(data_dengue_menor_2007, "C:/Users/NDTA.Dses01213518/Desktop/Azul BE_limpo/Inconsistências de início de sintomas/dengue_menor_2007.csv", row.names = FALSE)
-write.csv(data_chik_menor_2016, "C:/Users/NDTA.Dses01213518/Desktop/Azul BE_limpo/Inconsistências de início de sintomas/chik_menor_2016.csv", row.names = FALSE)
-write.csv(data_zika_menor_2016, "C:/Users/NDTA.Dses01213518/Desktop/Azul BE_limpo/Inconsistências de início de sintomas/zika_menor_2016.csv", row.names = FALSE)
-
+export(list(dengue_limpo = dengue_,
+            chikungunya_limpo = chikungunya_,
+            zika_limpo = zika_,
+            dengue_obitos = data_dengue_obitos,
+            chikungunya_obitos = data_chik_obitos,
+            zika_obitos = data_zika_obitos),
+       file = "C:/Users/NDTA.Dses01213518/Desktop/Azul BE_limpo/Azul_dados limpos_para_boletim_arbo/Para_boletim_arbovirose.xlsx")
+##saidas #nome da aba = #nome do objeto
+export(list(dengue_IS = data_dengue_menor_2007,
+            chikungunya_IS = data_chik_menor_2016,
+            zika_IS = data_zika_menor_2016,
+            dengue_classificacao = incon_dengue_classificacao,
+            chik_classificacao = incon_chik_classificacao,
+            dengue_criterio = incon_dengue_criterio,
+            chik_criterio = incon_chik_criterio,
+            dengue_gestante = incon_dengue_gestante,
+            chik_gestante = incon_chik_gestante,
+            zika_gestante = incon_zika_gestante,
+            dengue_alarme = incon_dengue_alarme,
+            dengue_grave = incon_dengue_grave,
+            dengue_descartado = incon_dengue_descartado,
+            chik_descartado = incon_chik_descartado,
+            dengue_obito = incons_dengue_obito,
+            chik_obito = incons_chik_obito,
+            zika_obito = incons_zika_obito),
+       file = "C:/Users/NDTA.Dses01213518/Desktop/Azul BE_limpo/Inconsistências/Inconsistências_arbovirose.xlsx")
 #############FIM
