@@ -1108,10 +1108,11 @@ data_zika_menor_2016 <- filter(data_zika, data_zika$DT_SIN_PRI < 2016)
 #se for confirmado, mas não tiver classificação 13 (para chikungunya)
 incon_dengue_classificacao <- filter(data_dengue_confirmados,
                                      data_dengue_confirmados$CLASSI_FIN != 10)
-incon_dengue_classificacao <- filter(data_dengue_confirmados,
-                                     data_dengue_confirmados$CLASSI_FIN != 11)
-incon_dengue_classificacao <- filter(data_dengue_confirmados,
-                                     data_dengue_confirmados$CLASSI_FIN != 12)
+
+incon_dengue_classificacao <- filter(incon_dengue_classificacao,
+                                     incon_dengue_classificacao$CLASSI_FIN != 11)
+incon_dengue_classificacao <- filter(incon_dengue_classificacao,
+                                     incon_dengue_classificacao$CLASSI_FIN != 12)
 incon_chik_classificacao <- filter(data_chik_confirmados,
                                    data_chik_confirmados$CLASSI_FIN != 13)
 
