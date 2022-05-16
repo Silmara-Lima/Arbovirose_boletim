@@ -1127,29 +1127,37 @@ incon_dengue_gestante <- filter(dengue_,
                                 dengue_$CS_SEXO == "M")
 
 incon_dengue_gestante <- filter(incon_dengue_gestante,
-                                incon_dengue_gestante$CS_GESTANTE == "1" |
-                                incon_dengue_gestante$CS_GESTANTE == "2" |
-                                incon_dengue_gestante$CS_GESTANTE == "3" |
+                                incon_dengue_gestante$CS_GESTANTE == "1")
+incon_dengue_gestante <- filter(incon_dengue_gestante,
+                                incon_dengue_gestante$CS_GESTANTE == "2")
+incon_dengue_gestante <- filter(incon_dengue_gestante,
+                                incon_dengue_gestante$CS_GESTANTE == "3")
+incon_dengue_gestante <- filter(incon_dengue_gestante,
                                 incon_dengue_gestante$CS_GESTANTE == "4")
-
 incon_chik_gestante <- filter(chikungunya_,
                               chikungunya_$CS_SEXO == "M")
 
 incon_chik_gestante <- filter(incon_chik_gestante,
-                              incon_chik_gestante$CS_GESTANTE == "1" |
-                              incon_chik_gestante$CS_GESTANTE == "2" |
-                              incon_chik_gestante$CS_GESTANTE == "3" |
+                              incon_chik_gestante$CS_GESTANTE == "1")
+incon_chik_gestante <- filter(incon_chik_gestante,
+                              incon_chik_gestante$CS_GESTANTE == "2")
+incon_chik_gestante <- filter(incon_chik_gestante,
+                              incon_chik_gestante$CS_GESTANTE == "3")
+incon_chik_gestante <- filter(incon_chik_gestante,
                               incon_chik_gestante$CS_GESTANTE == "4")
 
 incon_zika_gestante <- filter(zika_,
                               zika_$CS_SEXO == "M")
 
 incon_zika_gestante <- filter(incon_zika_gestante,
-                              incon_zika_gestante$CS_GESTANTE == "1" |
-                              incon_zika_gestante$CS_GESTANTE == "2" |
-                              incon_zika_gestante$CS_GESTANTE == "3" |
+                              incon_zika_gestante$CS_GESTANTE == "1")
+incon_zika_gestante <- filter(incon_zika_gestante,
+                              incon_zika_gestante$CS_GESTANTE == "2")
+incon_zika_gestante <- filter(incon_zika_gestante,
+                              incon_zika_gestante$CS_GESTANTE == "3")
+incon_zika_gestante <- filter(incon_zika_gestante,
                               incon_zika_gestante$CS_GESTANTE == "4")
-                                  
+
 #marcou dengue sinais de alarme na classificação, mas não marcaram sinais de alarme dengue (68)
 incon_dengue_alarme <- filter(dengue_,
                              dengue_$CLASSI_FIN == "11")
