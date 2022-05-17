@@ -73,17 +73,14 @@ data_dengue$RESUL_VI_N <- as.numeric(levels(data_dengue$RESUL_PCR_))[data_dengue
 data_dengue$HISTOPA_N <- as.numeric(levels(data_dengue$HISTOPA_N))[data_dengue$HISTOPA_N]
 data_dengue$IMUNOH_N <- as.numeric(levels(data_dengue$RESUL_PCR_))[data_dengue$IMUNOH_N]
 data_chik$RESUL_PCR_ <- as.numeric(levels(data_chik$RESUL_PCR_))[data_chik$RESUL_PCR_]
-data_chik$CLASSI_FIN <- as.numeric(levels(data_chik$RESUL_PCR_))[data_chik$RESUL_PCR_]
-data_chik$RES_CHIKS1 <- as.numeric(levels(data_chik$RESUL_PCR_))[data_chik$RESUL_PCR_]
-data_chik$RES_CHIKS2 <- as.numeric(levels(data_chik$RESUL_PCR_))[data_chik$RESUL_PCR_]
-data_chik$RESUL_PRNT <- as.numeric(levels(data_chik$RESUL_PCR_))[data_chik$RESUL_PCR_]
-data_chik$RESUL_SORO <- as.numeric(levels(data_chik$RESUL_PCR_))[data_chik$RESUL_PCR_]
-data_chik$RESUL_VI_N <- as.numeric(levels(data_chik$RESUL_PCR_))[data_chik$RESUL_PCR_]
-data_chik$HISTOPA_N <- as.numeric(levels(data_chik$RESUL_PCR_))[data_chik$RESUL_PCR_]
-data_chik$IMUNOH_N <- as.numeric(levels(data_chik$RESUL_PCR_))[data_chik$RESUL_PCR_]
-
-data_chik[is.na(data_chik)] <- 0
-data_zika[is.na(data_zika)] <- 0
+data_chik$CLASSI_FIN <- as.numeric(levels(data_chik$CLASSI_FIN))[data_chik$CLASSI_FIN]
+data_chik$RES_CHIKS1 <- as.numeric(levels(data_chik$RES_CHIKS1))[data_chik$RES_CHIKS1]
+data_chik$RES_CHIKS2 <- as.numeric(levels(data_chik$RES_CHIKS2))[data_chik$RES_CHIKS2]
+data_chik$RESUL_PRNT <- as.numeric(levels(data_chik$RESUL_PRNT))[data_chik$RESUL_PRNT]
+data_chik$RESUL_SORO <- as.numeric(levels(data_chik$RESUL_SORO))[data_chik$RESUL_SORO]
+data_chik$RESUL_VI_N <- as.numeric(levels(data_chik$RESUL_VI_N))[data_chik$RESUL_VI_N]
+data_chik$HISTOPA_N <- as.numeric(levels(data_chik$HISTOPA_N))[data_chik$HISTOPA_N]
+data_chik$IMUNOH_N <- as.numeric(levels(data_chik$RESUL_PCR_))[data_chik$IMUNOH_N]
 
 #ajustar data
 data_dengue$DT_SIN_PRI <- as.Date(data_dengue$DT_SIN_PRI, format="%d-%m-%Y")
@@ -797,7 +794,7 @@ data_chik_provaveis <- data_chik_provaveis %>%
            is.na(data_chik_provaveis$CLASSI_FIN))
 
 #após junção de linhas, retirar possíveis duplicidades
-id_pessoa_chik3<- paste(data_chik_provaveis$DT_SIN_PRI, data_chik_provaveis$id_pessoa_chik)
+id_pessoa_chik3 <- paste(data_chik_provaveis$DT_SIN_PRI, data_chik_provaveis$id_pessoa_chik)
 id_pessoa_chik3 <- data.frame(id_pessoa_chik3)
 data_chik_provaveis <- mutate(data_chik_provaveis, id_pessoa_chik3)
 data_chik_provaveis <- data_chik_provaveis[!duplicated(data_chik_provaveis$id_pessoa_chik3), ]
@@ -1048,6 +1045,10 @@ data_dengue_inv_obito <- rename(data_dengue_inv_obito, obitos = X.Em.investigaç
 data_dengue_obitos <- bind_rows(data_dengue_obito_confirmados,
                                 data_dengue_inv_obito)
 
+data_dengue_obitos <- rename(data_dengue_obitos, "Município de residência" = "nm_municipios_PB.x")
+data_dengue_obitos <- subset(data_dengue_obitos, 
+                         select = -c(id_pessoa_dengue))
+
 #óbitos confirmados chik
 data_chik_obito_confirmados <- filter(data_chik_provaveis,
                                       data_chik_provaveis$EVOLUCAO == "2")
@@ -1076,6 +1077,10 @@ data_chik_inv_obito <- rename(data_chik_inv_obito, obitos = X.Em.investigação.
 data_chik_obitos <- bind_rows(data_chik_obito_confirmados,
                               data_chik_inv_obito)
 
+data_chik_obitos <- rename(data_chik_obitos, "Município de residência" = "nm_municipios_PB.x")
+data_chik_obitos <- subset(data_chik_obitos, 
+                         select = -c(id_pessoa_chik))
+
 #óbitos confirmados zika
 data_zika_obito_confirmados <- filter(data_zika_confirmados,
                                       data_zika_confirmados$EVOLUCAO == "2")
@@ -1097,6 +1102,8 @@ data_zika_inv_obito <- rename(data_zika_inv_obito, obitos = X.Em.investigação.
 
 data_zika_obitos <- bind_rows(data_zika_obito_confirmados,
                               data_zika_inv_obito)
+
+data_zika_obitos <- rename(data_zika_obitos, "Município de residência" = "nm_municipios_PB.x")
 
 ###########################JUNÇÃO POR DEFINIÇÃO DE CADA AGRAVO #################
 #dengue
