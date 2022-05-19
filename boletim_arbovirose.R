@@ -154,7 +154,7 @@ nm_municipios_PB <- c("Água Branca", "Aguiar", "Alagoa Grande", "Alagoa Nova",
                       "Gurinhém", "Gurjão", "Ibiara", "Igaracy", "Imaculada",
                       "Ingá", "Itabaiana", "Itaporanga", "Itapororoca",
                       "Itatuba", "Jacaraú", "Jericó", "João Pessoa",
-                      "Joca Claudino", "Juarez Távora", "Juazeirinho",
+                      "Santarém", "Juarez Távora", "Juazeirinho",
                       "Junco do Seridó", "Juripiranga", "Juru", "Lagoa",
                       "Lagoa de Dentro", "Lagoa Seca", "Lastro", "Livramento",
                       "Logradouro", "Lucena", "Mãe d'Água", "Malta",
@@ -165,7 +165,7 @@ nm_municipios_PB <- c("Água Branca", "Aguiar", "Alagoa Grande", "Alagoa Nova",
                       "Nazarezinho", "Nova Floresta", "Nova Olinda",
                       "Nova Palmeira", "Olho d'Água", "Olivedos", "Ouro Velho",
                       "Parari", "Passagem", "Patos", "Paulista", "Pedra Branca",
-                      "Pedra Lavrada", "Pedras de Fogo", "Pedro Régis",
+                      "Pedra Lavrada", "Pedras de Fogo", "Pedro Regis",
                       "Piancó", "Picuí", "Pilar", "Pilões","Pilõezinhos",
                       "Pirpirituba", "Pitimbu", "Pocinhos","Poço Dantas",
                       "Poço de José de Moura", "Pombal", "Prata",
@@ -176,8 +176,8 @@ nm_municipios_PB <- c("Água Branca", "Aguiar", "Alagoa Grande", "Alagoa Nova",
                       "Salgado de São Félix", "Santa Cecília", "Santa Cruz",
                       "Santa Helena", "Santa Inês", "Santa Luzia",
                       "Santa Rita", "Santa Teresinha", "Santana de Mangueira",
-                      "Santana dos Garrotes", "Santo André", "São Bentinho",
-                      "São Bento", "São Domingos", "São Domingos do Cariri",
+                      "Santana dos Garrotes", "Santo André", "São Bento de Pombal",
+                      "São Bento", "São Domingos de Pombal", "São Domingos do Cariri",
                       "São Francisco", "São João do Cariri",
                       "São João do Rio do Peixe", "São João do Tigre",
                       "São José da Lagoa Tapada", "São José de Caiana",
@@ -187,10 +187,10 @@ nm_municipios_PB <- c("Água Branca", "Aguiar", "Alagoa Grande", "Alagoa Nova",
                       "São José dos Cordeiros", "São José dos Ramos",
                       "São Mamede", "São Miguel de Taipu",
                       "São Sebastião de Lagoa de Roça","São Sebastião do Umbuzeiro",
-                      "São Vicente do Seridó", "Sapé", "Serra Branca",
+                      "Seridó", "Sapé", "Serra Branca",
                       "Serra da Raiz", "Serra Grande", "Serra Redonda",
                       "Serraria", "Sertãozinho","Sobrado", "Solânea",
-                      "Soledade", "Sossêgo", "Sousa", "Sumé", "Tacima",
+                      "Soledade", "Sossego", "Sousa", "Sumé", "Tacima",
                       "Taperoá", "Tavares", "Teixeira", "Tenório", "Triunfo",
                       "Uiraúna", "Umbuzeiro", "Várzea", "Vieirópolis",
                       "Vista Serrana", "Zabelê")
@@ -344,7 +344,7 @@ data_dengue_ <- mutate(data_dengue_, id_pessoa_dengue1)
 data_dengue_ <- data_dengue_[!duplicated(data_dengue_$id_pessoa_dengue1), ]
 
 data_dengue_ <- subset(data_dengue_, 
-                      select = -c(id_pessoa_dengue1))
+                       select = -c(id_pessoa_dengue1))
 #regra de 7 dias para data_dengue_confirmados
 #mesmo id_pessoa só pode ter 4 tipos de dengue ao longo da vida
 #ordenar nome_paciente e id_pessoa_dengue
@@ -1047,7 +1047,7 @@ data_dengue_obitos <- bind_rows(data_dengue_obito_confirmados,
 
 data_dengue_obitos <- rename(data_dengue_obitos, "Município de residência" = "nm_municipios_PB.x")
 data_dengue_obitos <- subset(data_dengue_obitos, 
-                         select = -c(id_pessoa_dengue))
+                             select = -c(id_pessoa_dengue))
 
 #óbitos confirmados chik
 data_chik_obito_confirmados <- filter(data_chik_provaveis,
@@ -1079,7 +1079,7 @@ data_chik_obitos <- bind_rows(data_chik_obito_confirmados,
 
 data_chik_obitos <- rename(data_chik_obitos, "Município de residência" = "nm_municipios_PB.x")
 data_chik_obitos <- subset(data_chik_obitos, 
-                         select = -c(id_pessoa_chik))
+                           select = -c(id_pessoa_chik))
 
 #óbitos confirmados zika
 data_zika_obito_confirmados <- filter(data_zika_confirmados,
@@ -1108,29 +1108,29 @@ data_zika_obitos <- rename(data_zika_obitos, "Município de residência" = "nm_m
 ###########################JUNÇÃO POR DEFINIÇÃO DE CADA AGRAVO #################
 #dengue
 dengue_ok <- bind_rows(data_dengue_confirmados,
-                     data_dengue_descartados,
-                     data_dengue_provaveis)
+                       data_dengue_descartados,
+                       data_dengue_provaveis)
 
 dengue_ok <- subset(dengue_ok, 
-              select = -c(id_pessoa_dengue,
-                          id_pessoa_dengue1))
+                    select = -c(id_pessoa_dengue,
+                                id_pessoa_dengue1))
 
 dengue_ok <- rename(dengue_ok, "Município de residência" = "nm_municipios_PB.x")
 
 #chik
 chikungunya_ok <- bind_rows(data_chik_confirmados,
-                          data_chik_descartados,
-                          data_chik_provaveis)
+                            data_chik_descartados,
+                            data_chik_provaveis)
 
 chikungunya_ok <- subset(chikungunya_ok, 
-                    select = -c(id_pessoa_chik))
+                         select = -c(id_pessoa_chik))
 
 chikungunya_ok <- rename(chikungunya_ok, "Município de residência" = "nm_municipios_PB.x")
 
 #zika
 zika_ok <- bind_rows(data_zika_confirmados,
-                   data_zika_descartados,
-                   data_zika_provaveis)
+                     data_zika_descartados,
+                     data_zika_provaveis)
 
 zika_ok <- rename(zika_ok, "Município de residência" = "nm_municipios_PB.x")
 
@@ -1305,9 +1305,43 @@ incons_zika_obito <- filter(data_zika_confirmados,
 incon_dengue_sem_suspeita <- anti_join(data_dengue, dengue_, by = "NU_NOTIFIC")
 incon_chik_sem_suspeita <- anti_join(data_chik, chikungunya_, by = "NU_NOTIFIC")
 
+############################### SUMÁRIO ########################################
+nm_dengue_provaveis <- filter(dengue_ok, 
+                              dengue_ok$marcador == "prováveis") 
+nm_dengue_provaveis <- table(nm_dengue_provaveis$`Município de residência`) 
+nm_dengue_provaveis <- data.frame(nm_dengue_provaveis)
+nm_dengue_provaveis <- rename(nm_dengue_provaveis, Dengue_provaveis = Freq)
+nm_dengue_provaveis <- rename(nm_dengue_provaveis, municipio_de_residencia = Var1)
+
+nm_chik_provaveis <- filter(chikungunya_ok, 
+                            chikungunya_ok$marcador == "prováveis")
+nm_chik_provaveis <- table(nm_chik_provaveis$`Município de residência`) 
+nm_chik_provaveis <- data.frame(nm_chik_provaveis)
+nm_chik_provaveis <- rename(nm_chik_provaveis, Chikungunya_provaveis = Freq)
+nm_chik_provaveis <- rename(nm_chik_provaveis, municipio_de_residencia = Var1)
+
+nm_zika_provaveis <- filter(zika_ok, 
+                            zika_ok$marcador == "prováveis")
+nm_zika_provaveis <- table(nm_zika_provaveis$`Município de residência`) 
+nm_zika_provaveis <- data.frame(nm_zika_provaveis)
+nm_zika_provaveis <- rename(nm_zika_provaveis, Zika_provaveis = Freq)
+nm_zika_provaveis <- rename(nm_zika_provaveis, municipio_de_residencia = Var1)
+
+SUMARIO <- municipios_PB
+SUMARIO <- rename(SUMARIO, "municipio_de_residencia" = nm_municipios_PB.x)
+
+SUMARIO <- left_join(SUMARIO, nm_dengue_provaveis, by = "municipio_de_residencia")
+SUMARIO <- left_join(SUMARIO, nm_chik_provaveis, by = "municipio_de_residencia")
+SUMARIO <- left_join(SUMARIO, nm_zika_provaveis, by = "municipio_de_residencia")
+
+SUMARIO[is.na(SUMARIO)] <- 0
+
+SUMARIO <- arrange(SUMARIO, SUMARIO$municipio_de_residencia)
+
 ###################################### saídas ##################################
 ##saidas #nome da aba = #nome do objeto
-export(list(dengue_limpo = dengue_ok,
+export(list(SUMARIO = SUMARIO,
+            dengue_limpo = dengue_ok,
             chikungunya_limpo = chikungunya_ok,
             zika_limpo = zika_ok,
             dengue_obitos = data_dengue_obitos,
