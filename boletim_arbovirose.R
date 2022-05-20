@@ -286,14 +286,20 @@ municipios_PB <- subset(municipios_PB,
 
 municipios_PB <- rename(municipios_PB, GRS = GRS1)
 
+#retirar municipio nulo
+data_dengue <- data_dengue %>% filter(!is.na(data_dengue$ID_MN_RESI))
 #renomear ID_MN_RESI para o left_join GRS, RS e Macro
 data_dengue <- dplyr::rename(data_dengue, cod_ibge = ID_MN_RESI)
 data_dengue <- left_join(data_dengue, municipios_PB, by = "cod_ibge")
 
+#retirar municipio nulo
+data_chik <- data_chik %>% filter(!is.na(data_chik$ID_MN_RESI))
 #renomear ID_MN_RESI para o left_join GRS, RS e Macro
 data_chik <- dplyr::rename(data_chik, cod_ibge = ID_MN_RESI)
 data_chik <- left_join(data_chik, municipios_PB, by = "cod_ibge")
 
+#retirar municipio nulo
+data_zika <- data_zika %>% filter(!is.na(data_zika$ID_MN_RESI))
 #renomear ID_MN_RESI para o left_join GRS, RS e Macro
 data_zika <- dplyr::rename(data_zika, cod_ibge = ID_MN_RESI)
 data_zika <- left_join(data_zika, municipios_PB, by = "cod_ibge")
@@ -1160,23 +1166,23 @@ incon_chik_criterio <- filter(data_chik_laboratorio,
                               data_chik_laboratorio$CRITERIO != "1")
 
 #gestante com sexo masculino
-incon_dengue_gestante <- filter(dengue_,
-                                dengue_$CS_SEXO == "M")
+incon_dengue_gestante <- filter(dengue_ok,
+                                dengue_ok$CS_SEXO == "M")
 
 incon_dengue_gestante <- filter(incon_dengue_gestante,
                                 incon_dengue_gestante$CS_GESTANT != "6")
 incon_dengue_gestante <- filter(incon_dengue_gestante,
                                 incon_dengue_gestante$CS_GESTANT != "5")
-incon_chik_gestante <- filter(chikungunya_,
-                              chikungunya_$CS_SEXO == "M")
+incon_chik_gestante <- filter(chikungunya_ok,
+                              chikungunya_ok$CS_SEXO == "M")
 
 incon_chik_gestante <- filter(incon_chik_gestante,
                               incon_chik_gestante$CS_GESTANT != "5")
 incon_chik_gestante <- filter(incon_chik_gestante,
                               incon_chik_gestante$CS_GESTANT != "6")
 
-incon_zika_gestante <- filter(zika_,
-                              zika_$CS_SEXO == "M")
+incon_zika_gestante <- filter(zika_ok,
+                              zika_ok$CS_SEXO == "M")
 
 incon_zika_gestante <- filter(incon_zika_gestante,
                               incon_zika_gestante$CS_GESTANT != "5")
@@ -1184,8 +1190,8 @@ incon_zika_gestante <- filter(incon_zika_gestante,
                               incon_zika_gestante$CS_GESTANT != "6")
 
 #marcou dengue sinais de alarme na classificação, mas não marcaram sinais de alarme dengue (68)
-incon_dengue_alarme <- filter(dengue_,
-                              dengue_$CLASSI_FIN == "11")
+incon_dengue_alarme <- filter(dengue_ok,
+                              dengue_ok$CLASSI_FIN == "11")
 
 incon_dengue_alarme <- filter(incon_dengue_alarme,
                               incon_dengue_alarme$ALRM_HIPOT != 1)
@@ -1207,8 +1213,8 @@ incon_dengue_alarme <- filter(incon_dengue_alarme,
                               incon_dengue_alarme$ALRM_LIQ != 1)
 
 #marcou dengue grave na classificação, mas não marcaram sinais de alarme dengue (70)                              
-incon_dengue_grave <- filter(dengue_,
-                             dengue_$CLASSI_FIN == "12")
+incon_dengue_grave <- filter(dengue_ok,
+                             dengue_ok$CLASSI_FIN == "12")
 
 incon_dengue_grave <- filter(incon_dengue_grave,
                              incon_dengue_grave$GRAV_PULSO != 1)
@@ -1257,8 +1263,8 @@ incon_dengue_grave <- filter(incon_dengue_grave,
 incon_dengue_grave <- filter(incon_dengue_grave,
                              incon_dengue_grave$SANGRAM != 1)
 #se tiver classificação 5 (descartado), sem exame 
-incon_dengue_descartado <- filter(dengue_,
-                                  dengue_$CLASSI_FIN == 5)
+incon_dengue_descartado <- filter(dengue_ok,
+                                  dengue_ok$CLASSI_FIN == 5)
 incon_dengue_descartado <- filter(incon_dengue_descartado,
                                   incon_dengue_descartado$RESUL_PCR_ != 2)
 incon_dengue_descartado <- filter(incon_dengue_descartado,
@@ -1274,8 +1280,8 @@ incon_dengue_descartado <- filter(incon_dengue_descartado,
 incon_dengue_descartado <- filter(incon_dengue_descartado,
                                   incon_dengue_descartado$RESUL_PRNT != 2)
 
-incon_chik_descartado <- filter(chikungunya_,
-                                chikungunya_$CLASSI_FIN == 5)
+incon_chik_descartado <- filter(chikungunya_ok,
+                                chikungunya_ok$CLASSI_FIN == 5)
 incon_chik_descartado <- filter(incon_chik_descartado,
                                 incon_chik_descartado$RESUL_PCR_ != 2)
 incon_chik_descartado <- filter(incon_chik_descartado,
@@ -1302,8 +1308,8 @@ incons_zika_obito <- filter(data_zika_confirmados,
                             data_zika_confirmados$EVOLUCAO == "3")
 
 #notificados sem a clínica e sem laboratorio 
-incon_dengue_sem_suspeita <- anti_join(data_dengue, dengue_, by = "NU_NOTIFIC")
-incon_chik_sem_suspeita <- anti_join(data_chik, chikungunya_, by = "NU_NOTIFIC")
+incon_dengue_sem_suspeita <- anti_join(data_dengue, dengue_ok, by = "NU_NOTIFIC")
+incon_chik_sem_suspeita <- anti_join(data_chik, chikungunya_ok, by = "NU_NOTIFIC")
 
 ############################### SUMÁRIO ########################################
 nm_dengue_provaveis <- filter(dengue_ok, 
@@ -1347,7 +1353,7 @@ export(list(SUMARIO = SUMARIO,
             dengue_obitos = data_dengue_obitos,
             chikungunya_obitos = data_chik_obitos,
             zika_obitos = data_zika_obitos),
-       file = "C:/Users/NDTA.Dses01213518/Desktop/Azul BE_limpo/Azul_dados limpos_para_boletim_arbo/Para_boletim_arbovirose.xlsx")
+       file = "C:/Users/ADM/Dropbox/PC/Desktop/Scipts by_Silmara/Projeto_boletim_arbovirose/Para_boletim_arbovirose.xlsx")
 ##saidas #nome da aba = #nome do objeto
 export(list(dengue_IS = data_dengue_menor_2007,
             chikungunya_IS = data_chik_menor_2016,
@@ -1366,5 +1372,5 @@ export(list(dengue_IS = data_dengue_menor_2007,
             dengue_obito = incons_dengue_obito,
             chik_obito = incons_chik_obito,
             zika_obito = incons_zika_obito),
-       file = "C:/Users/NDTA.Dses01213518/Desktop/Azul BE_limpo/Inconsistências/Inconsistências_arbovirose.xlsx")
-#############FIM
+       file = "C:/Users/ADM/Dropbox/PC/Desktop/Scipts by_Silmara/Projeto_boletim_arbovirose/Inconsistências_arbovirose.xlsx")
+      #############FIM
