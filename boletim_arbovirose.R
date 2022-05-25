@@ -60,9 +60,14 @@ RemoveAcentos <- function(textoComAcentos) {
   return(textoSemAcentos)
 }
 
-RemoveAcentos(data_dengue$NM_PACIENT)
-RemoveAcentos(data_chik$NM_PACIENT)
-RemoveAcentos(data_zika$NM_PACIENT)
+data_dengue_paciente <- data.frame(RemoveAcentos(data_dengue$NM_PACIENT))
+data_dengue$NM_PACIENT <- data_dengue_paciente
+
+data_chik_paciente <- data.frame(RemoveAcentos(data_chik$NM_PACIENT))
+data_chik$NM_PACIENT <- data_chik_paciente
+
+data_zika_paciente <- data.frame(RemoveAcentos(data_zika$NM_PACIENT))
+data_zika$NM_PACIENT <- data_zika_paciente
 
 #ajustar numeric
 data_dengue$RESUL_PCR_ <- as.numeric(levels(data_dengue$RESUL_PCR_))[data_dengue$RESUL_PCR_]
