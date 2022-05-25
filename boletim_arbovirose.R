@@ -47,27 +47,27 @@ data_zika = filter(data_zika, data_zika$SG_UF == 25)
 #################### LIMPAR DADOS E AJUSTE DE CLASSES #########################
 #função remover acentos
 RemoveAcentos <- function(textoComAcentos) {
+  
+  # Se nao foi informado texto
   if(!is.character(textoComAcentos)){
     on.exit()
   }
-  letrasComAcentos <- "??????????????????????????????????????????????????Ǵ`^~?"
+  
+  # Letras com acentos
+  letrasComAcentos <- "áéíóúÁÉÍÓÚýÝàèìòùÀÈÌÒÙâêîôûÂÊÎÔÛãõÃÕñÑäëïöüÄËÏÖÜÿçÇ´`^~¨"
+  
+  # Letras equivalentes sem acentos
   letrasSemAcentos <- "aeiouAEIOUyYaeiouAEIOUaeiouAEIOUaoAOnNaeiouAEIOUycC     "
+  
   textoSemAcentos <- chartr(
     old = letrasComAcentos,
     new = letrasSemAcentos,
     x = textoComAcentos
   ) 
+  
+  # Retorno da funcao
   return(textoSemAcentos)
 }
-
-data_dengue_paciente <- data.frame(RemoveAcentos(data_dengue$NM_PACIENT))
-data_dengue$NM_PACIENT <- data_dengue_paciente
-
-data_chik_paciente <- data.frame(RemoveAcentos(data_chik$NM_PACIENT))
-data_chik$NM_PACIENT <- data_chik_paciente
-
-data_zika_paciente <- data.frame(RemoveAcentos(data_zika$NM_PACIENT))
-data_zika$NM_PACIENT <- data_zika_paciente
 
 #ajustar numeric
 data_dengue$RESUL_PCR_ <- as.numeric(levels(data_dengue$RESUL_PCR_))[data_dengue$RESUL_PCR_]
@@ -324,15 +324,26 @@ id_pessoa_chik <- paste(data_chik$NM_PACIENT,
                         data_chik$DT_NASC,
                         data_chik$ID_MN_RESI)
 
-#remover espaços em branco
-id_pessoa_dengue <- str_remove_all (id_pessoa_dengue, " ")
-id_pessoa_zika <- str_remove_all (id_pessoa_zika, " ")
-id_pessoa_chik <- str_remove_all (id_pessoa_chik, " ")
-
 #acrescentar coluna com ID_Pessoa
 data_dengue <- mutate(data_dengue, id_pessoa_dengue)
 data_zika <- mutate(data_zika, id_pessoa_zika)
 data_chik <- mutate(data_chik, id_pessoa_chik)
+
+########################### DESNORMALIZAR CHAVES ################################
+data_dengue_id_pessoa_ <- data.frame(RemoveAcentos(data_dengue$id_pessoa)) 
+data_dengue_id_pessoa_ <- str_replace_all(data_dengue_id_pessoa_$RemoveAcentos.data_dengue.id_pessoa., " ", "")
+data_dengue_id_pessoa_ <- data.frame(data_dengue_id_pessoa_)
+data_dengue <- cbind(data_dengue, data_dengue_id_pessoa_)
+
+data_chik_id_pessoa_ <- data.frame(RemoveAcentos(data_chik$id_pessoa)) 
+data_chik_id_pessoa_ <- str_replace_all(data_chik_id_pessoa_$RemoveAcentos.data_chik.id_pessoa., " ", "")
+data_chik_id_pessoa_ <- data.frame(data_chik_id_pessoa_)
+data_chik <- cbind(data_chik, data_chik_id_pessoa_)
+
+data_zika_id_pessoa_ <- data.frame(RemoveAcentos(data_zika$id_pessoa)) 
+data_zika_id_pessoa_ <- str_replace_all(data_zika_id_pessoa_$RemoveAcentos.data_zika.id_pessoa., " ", "")
+data_zika_id_pessoa_ <- data.frame(data_zika_id_pessoa_)
+data_zika <- cbind(data_zika, data_zika_id_pessoa_)
 
 ################## FILTRAR REGISTROS VALIDOS ###################################
 #separar registros que tem início de sintomas anterior a data de surgimento de
@@ -349,7 +360,7 @@ data_zika_ <- filter(data_zika, data_zika$DT_SIN_PRI > "2022-01-01")
 ####################### REMOVER DUPLICIDADES ###################################
 #remover duplicados de IS + id_pessoa
 #dengue
-id_pessoa_dengue1 <- paste(data_dengue_$DT_SIN_PRI, data_dengue_$id_pessoa_dengue)
+id_pessoa_dengue1 <- paste(data_dengue_$DT_SIN_PRI, data_dengue_$id_pessoa_dengue_)
 id_pessoa_dengue1 <- data.frame(id_pessoa_dengue1)
 data_dengue_ <- mutate(data_dengue_, id_pessoa_dengue1)
 data_dengue_ <- data_dengue_[!duplicated(data_dengue_$id_pessoa_dengue1), ]
@@ -370,11 +381,11 @@ freq_DT_7_dias <- rename(freq_DT_7_dias, id_pessoa_dengue = Var1)
 DT_dengue_7_dias <- left_join(DT_dengue_7_dias, freq_DT_7_dias, by = "id_pessoa_dengue")
 
 #filtrar quem tem um registro ou mais de 2 registros
-#ao final juntar o de frequência 1 + de frequência superior a 2, após aplicar regra dos 90 dias
+#ao final juntar o de frequência 1 + de frequência superior a 2, após aplicar regra dos 7 dias
 DT_dengue_7_dias_igual1 <- filter(DT_dengue_7_dias, DT_dengue_7_dias$Freq < 2)
 DT_dengue_7_dias_maior2 <- filter(DT_dengue_7_dias, DT_dengue_7_dias$Freq >= 2)
 
-#2 ou mais registros aplicando a regra dos 90 dias
+#2 ou mais registros aplicando a regra dos 7 dias
 DT_dengue_pos_7_dias <- DT_dengue_7_dias_maior2 %>% 
   dplyr::left_join(.,
                    DT_dengue_7_dias_maior2 %>% 
@@ -402,7 +413,7 @@ data_dengue_pos_7_dias <- bind_rows(DT_dengue_7_dias_igual1, DT_dengue_pos_7_dia
 data_dengue_ <- data_dengue_pos_7_dias
 
 #chikungunya
-id_pessoa_chik1 <- paste(data_chik_$DT_SIN_PRI, data_chik_$id_pessoa_chik)
+id_pessoa_chik1 <- paste(data_chik_$DT_SIN_PRI, data_chik_$id_pessoa_chik_)
 id_pessoa_chik1 <- data.frame(id_pessoa_chik1)
 data_chik_ <- mutate(data_chik_, id_pessoa_chik1)
 data_chik_ <- data_chik_[!duplicated(data_chik_$id_pessoa_chik1), ]
@@ -411,7 +422,7 @@ data_chik_ <- subset(data_chik_,
                      select = -c(id_pessoa_chik1))
 
 #zika
-id_pessoa_zika1 <- paste(data_zika_$DT_SIN_PRI, data_zika_$id_pessoa_zika)
+id_pessoa_zika1 <- paste(data_zika_$DT_SIN_PRI, data_zika_$id_pessoa_zika_)
 id_pessoa_zika1 <- data.frame(id_pessoa_zika1)
 data_zika_ <- mutate(data_zika_, id_pessoa_zika1)
 data_zika_ <- data_zika_[!duplicated(data_zika_$id_pessoa_zika1), ]
@@ -453,7 +464,7 @@ data_dengue_descartados <- data_dengue_descartados %>%
   filter(data_dengue_descartados$RESUL_PRNT != 1 |
            is.na(data_dengue_descartados$RESUL_PRNT))
 
-id_pessoa_dengue2 <- paste(data_dengue_descartados$DT_SIN_PRI, data_dengue_descartados$id_pessoa_dengue)
+id_pessoa_dengue2 <- paste(data_dengue_descartados$DT_SIN_PRI, data_dengue_descartados$id_pessoa_dengue_)
 id_pessoa_dengue2 <- data.frame(id_pessoa_dengue2)
 data_dengue_descartados <- mutate(data_dengue_descartados, id_pessoa_dengue2)
 data_dengue_descartados <- data_dengue_descartados[!duplicated(data_dengue_descartados$id_pessoa_dengue2), ]
@@ -495,7 +506,7 @@ data_dengue_provaveis <- data_dengue_provaveis %>%
   filter(data_dengue_provaveis$CLASSI_FIN != 5 |
            is.na(data_dengue_provaveis$CLASSI_FIN))
 
-id_pessoa_dengue3 <- paste(data_dengue_provaveis$DT_SIN_PRI, data_dengue_provaveis$id_pessoa_dengue)
+id_pessoa_dengue3 <- paste(data_dengue_provaveis$DT_SIN_PRI, data_dengue_provaveis$id_pessoa_dengue_)
 id_pessoa_dengue3 <- data.frame(id_pessoa_dengue3)
 data_dengue_provaveis <- mutate(data_dengue_provaveis, id_pessoa_dengue3)
 data_dengue_provaveis <- data_dengue_provaveis[!duplicated(data_dengue_provaveis$id_pessoa_dengue3), ]
