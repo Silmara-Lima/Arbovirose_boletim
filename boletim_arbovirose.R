@@ -13,7 +13,7 @@ library("rio")
 ############### DESCOMPACTAR ARQUIVOS ARBOVIROSE ###############################
 #abrir arquivos dengue
 getwd()
-data_pasta_dengue = list.files(pattern = '^DENGON', recursive = TRUE)
+data_pasta_dengue = list.files(pattern = '^DENG', recursive = TRUE)
 
 extrator = function(data_pasta_dengue){
   read.dbf(data_pasta_dengue)
@@ -22,9 +22,10 @@ extrator = function(data_pasta_dengue){
 data_dengue = map_dfr(data_pasta_dengue, extrator)
 
 data_dengue = filter(data_dengue, data_dengue$SG_UF == 25)
+data_dengue = data_dengue %>%  filter(! is.na(data_dengue$ID_MN_RESI))
 
 #abrir arquivos chik
-data_pasta_chik = list.files(pattern = '^CHIKON', recursive = TRUE)
+data_pasta_chik = list.files(pattern = '^CHIK', recursive = TRUE)
 
 extrator1 = function(data_pasta_chik){
   read.dbf(data_pasta_chik)
@@ -32,6 +33,7 @@ extrator1 = function(data_pasta_chik){
 
 data_chik = map_dfr(data_pasta_chik, extrator)
 data_chik = filter(data_chik, data_chik$SG_UF == 25)
+data_chik = data_chik %>%  filter(! is.na(data_chik$ID_MN_RESI))
 
 #abrir arquivos zika
 data_pasta_zika = list.files(pattern = '^NINDINET', recursive = TRUE)
@@ -43,31 +45,27 @@ extrator1 = function(data_pasta_zika){
 data_pasta_zika = map_dfr(data_pasta_zika, extrator)
 data_zika = filter(data_pasta_zika, data_pasta_zika$ID_AGRAVO == "A928")
 data_zika = filter(data_zika, data_zika$SG_UF == 25)
+data_zika = data_zika %>%  filter(! is.na(data_zika$ID_MN_RESI))
 
 #################### LIMPAR DADOS E AJUSTE DE CLASSES #########################
 #função remover acentos
 RemoveAcentos <- function(textoComAcentos) {
-  
-  # Se nao foi informado texto
   if(!is.character(textoComAcentos)){
     on.exit()
   }
-  
-  # Letras com acentos
-  letrasComAcentos <- "áéíóúÁÉÍÓÚýÝàèìòùÀÈÌÒÙâêîôûÂÊÎÔÛãõÃÕñÑäëïöüÄËÏÖÜÿçÇ´`^~¨"
-  
-  # Letras equivalentes sem acentos
+  letrasComAcentos <- "??????????????????????????????????????????????????Ǵ`^~?"
   letrasSemAcentos <- "aeiouAEIOUyYaeiouAEIOUaeiouAEIOUaoAOnNaeiouAEIOUycC     "
-  
   textoSemAcentos <- chartr(
     old = letrasComAcentos,
     new = letrasSemAcentos,
     x = textoComAcentos
   ) 
-  
-  # Retorno da funcao
   return(textoSemAcentos)
 }
+
+RemoveAcentos(data_dengue$NM_PACIENT)
+RemoveAcentos(data_chik$NM_PACIENT)
+RemoveAcentos(data_zika$NM_PACIENT)
 
 #ajustar numeric
 data_dengue$RESUL_PCR_ <- as.numeric(levels(data_dengue$RESUL_PCR_))[data_dengue$RESUL_PCR_]
@@ -291,20 +289,14 @@ municipios_PB <- subset(municipios_PB,
 
 municipios_PB <- rename(municipios_PB, GRS = GRS1)
 
-#retirar municipio nulo
-data_dengue <- data_dengue %>% filter(!is.na(data_dengue$ID_MN_RESI))
 #renomear ID_MN_RESI para o left_join GRS, RS e Macro
 data_dengue <- dplyr::rename(data_dengue, cod_ibge = ID_MN_RESI)
 data_dengue <- left_join(data_dengue, municipios_PB, by = "cod_ibge")
 
-#retirar municipio nulo
-data_chik <- data_chik %>% filter(!is.na(data_chik$ID_MN_RESI))
 #renomear ID_MN_RESI para o left_join GRS, RS e Macro
 data_chik <- dplyr::rename(data_chik, cod_ibge = ID_MN_RESI)
 data_chik <- left_join(data_chik, municipios_PB, by = "cod_ibge")
 
-#retirar municipio nulo
-data_zika <- data_zika %>% filter(!is.na(data_zika$ID_MN_RESI))
 #renomear ID_MN_RESI para o left_join GRS, RS e Macro
 data_zika <- dplyr::rename(data_zika, cod_ibge = ID_MN_RESI)
 data_zika <- left_join(data_zika, municipios_PB, by = "cod_ibge")
@@ -360,7 +352,7 @@ data_zika_ <- filter(data_zika, data_zika$DT_SIN_PRI > "2022-01-01")
 ####################### REMOVER DUPLICIDADES ###################################
 #remover duplicados de IS + id_pessoa
 #dengue
-id_pessoa_dengue1 <- paste(data_dengue_$DT_SIN_PRI, data_dengue_$id_pessoa_dengue_)
+id_pessoa_dengue1 <- paste(data_dengue_$DT_SIN_PRI, data_dengue_$id_pessoa_dengue)
 id_pessoa_dengue1 <- data.frame(id_pessoa_dengue1)
 data_dengue_ <- mutate(data_dengue_, id_pessoa_dengue1)
 data_dengue_ <- data_dengue_[!duplicated(data_dengue_$id_pessoa_dengue1), ]
@@ -381,11 +373,11 @@ freq_DT_7_dias <- rename(freq_DT_7_dias, id_pessoa_dengue = Var1)
 DT_dengue_7_dias <- left_join(DT_dengue_7_dias, freq_DT_7_dias, by = "id_pessoa_dengue")
 
 #filtrar quem tem um registro ou mais de 2 registros
-#ao final juntar o de frequência 1 + de frequência superior a 2, após aplicar regra dos 7 dias
+#ao final juntar o de frequência 1 + de frequência superior a 2, após aplicar regra dos 90 dias
 DT_dengue_7_dias_igual1 <- filter(DT_dengue_7_dias, DT_dengue_7_dias$Freq < 2)
 DT_dengue_7_dias_maior2 <- filter(DT_dengue_7_dias, DT_dengue_7_dias$Freq >= 2)
 
-#2 ou mais registros aplicando a regra dos 7 dias
+#2 ou mais registros aplicando a regra dos 90 dias
 DT_dengue_pos_7_dias <- DT_dengue_7_dias_maior2 %>% 
   dplyr::left_join(.,
                    DT_dengue_7_dias_maior2 %>% 
@@ -413,7 +405,7 @@ data_dengue_pos_7_dias <- bind_rows(DT_dengue_7_dias_igual1, DT_dengue_pos_7_dia
 data_dengue_ <- data_dengue_pos_7_dias
 
 #chikungunya
-id_pessoa_chik1 <- paste(data_chik_$DT_SIN_PRI, data_chik_$id_pessoa_chik_)
+id_pessoa_chik1 <- paste(data_chik_$DT_SIN_PRI, data_chik_$id_pessoa_chik)
 id_pessoa_chik1 <- data.frame(id_pessoa_chik1)
 data_chik_ <- mutate(data_chik_, id_pessoa_chik1)
 data_chik_ <- data_chik_[!duplicated(data_chik_$id_pessoa_chik1), ]
@@ -422,7 +414,7 @@ data_chik_ <- subset(data_chik_,
                      select = -c(id_pessoa_chik1))
 
 #zika
-id_pessoa_zika1 <- paste(data_zika_$DT_SIN_PRI, data_zika_$id_pessoa_zika_)
+id_pessoa_zika1 <- paste(data_zika_$DT_SIN_PRI, data_zika_$id_pessoa_zika)
 id_pessoa_zika1 <- data.frame(id_pessoa_zika1)
 data_zika_ <- mutate(data_zika_, id_pessoa_zika1)
 data_zika_ <- data_zika_[!duplicated(data_zika_$id_pessoa_zika1), ]
@@ -464,7 +456,7 @@ data_dengue_descartados <- data_dengue_descartados %>%
   filter(data_dengue_descartados$RESUL_PRNT != 1 |
            is.na(data_dengue_descartados$RESUL_PRNT))
 
-id_pessoa_dengue2 <- paste(data_dengue_descartados$DT_SIN_PRI, data_dengue_descartados$id_pessoa_dengue_)
+id_pessoa_dengue2 <- paste(data_dengue_descartados$DT_SIN_PRI, data_dengue_descartados$id_pessoa_dengue)
 id_pessoa_dengue2 <- data.frame(id_pessoa_dengue2)
 data_dengue_descartados <- mutate(data_dengue_descartados, id_pessoa_dengue2)
 data_dengue_descartados <- data_dengue_descartados[!duplicated(data_dengue_descartados$id_pessoa_dengue2), ]
@@ -506,7 +498,7 @@ data_dengue_provaveis <- data_dengue_provaveis %>%
   filter(data_dengue_provaveis$CLASSI_FIN != 5 |
            is.na(data_dengue_provaveis$CLASSI_FIN))
 
-id_pessoa_dengue3 <- paste(data_dengue_provaveis$DT_SIN_PRI, data_dengue_provaveis$id_pessoa_dengue_)
+id_pessoa_dengue3 <- paste(data_dengue_provaveis$DT_SIN_PRI, data_dengue_provaveis$id_pessoa_dengue)
 id_pessoa_dengue3 <- data.frame(id_pessoa_dengue3)
 data_dengue_provaveis <- mutate(data_dengue_provaveis, id_pessoa_dengue3)
 data_dengue_provaveis <- data_dengue_provaveis[!duplicated(data_dengue_provaveis$id_pessoa_dengue3), ]
@@ -1182,23 +1174,24 @@ incon_chik_criterio <- filter(data_chik_laboratorio,
                               data_chik_laboratorio$CRITERIO != "1")
 
 #gestante com sexo masculino
-incon_dengue_gestante <- filter(dengue_ok,
-                                dengue_ok$CS_SEXO == "M")
+incon_dengue_gestante <- filter(data_dengue_,
+                                data_dengue_$CS_SEXO == "M")
 
 incon_dengue_gestante <- filter(incon_dengue_gestante,
                                 incon_dengue_gestante$CS_GESTANT != "6")
 incon_dengue_gestante <- filter(incon_dengue_gestante,
                                 incon_dengue_gestante$CS_GESTANT != "5")
-incon_chik_gestante <- filter(chikungunya_ok,
-                              chikungunya_ok$CS_SEXO == "M")
+
+incon_chik_gestante <- filter(data_chik_,
+                              data_chik_$CS_SEXO == "M")
 
 incon_chik_gestante <- filter(incon_chik_gestante,
                               incon_chik_gestante$CS_GESTANT != "5")
 incon_chik_gestante <- filter(incon_chik_gestante,
                               incon_chik_gestante$CS_GESTANT != "6")
 
-incon_zika_gestante <- filter(zika_ok,
-                              zika_ok$CS_SEXO == "M")
+incon_zika_gestante <- filter(data_zika_,
+                              data_zika_$CS_SEXO == "M")
 
 incon_zika_gestante <- filter(incon_zika_gestante,
                               incon_zika_gestante$CS_GESTANT != "5")
@@ -1206,8 +1199,8 @@ incon_zika_gestante <- filter(incon_zika_gestante,
                               incon_zika_gestante$CS_GESTANT != "6")
 
 #marcou dengue sinais de alarme na classificação, mas não marcaram sinais de alarme dengue (68)
-incon_dengue_alarme <- filter(dengue_ok,
-                              dengue_ok$CLASSI_FIN == "11")
+incon_dengue_alarme <- filter(data_dengue_,
+                              data_dengue_$CLASSI_FIN == "11")
 
 incon_dengue_alarme <- filter(incon_dengue_alarme,
                               incon_dengue_alarme$ALRM_HIPOT != 1)
@@ -1229,8 +1222,8 @@ incon_dengue_alarme <- filter(incon_dengue_alarme,
                               incon_dengue_alarme$ALRM_LIQ != 1)
 
 #marcou dengue grave na classificação, mas não marcaram sinais de alarme dengue (70)                              
-incon_dengue_grave <- filter(dengue_ok,
-                             dengue_ok$CLASSI_FIN == "12")
+incon_dengue_grave <- filter(data_dengue_,
+                             data_dengue_$CLASSI_FIN == "12")
 
 incon_dengue_grave <- filter(incon_dengue_grave,
                              incon_dengue_grave$GRAV_PULSO != 1)
@@ -1279,8 +1272,8 @@ incon_dengue_grave <- filter(incon_dengue_grave,
 incon_dengue_grave <- filter(incon_dengue_grave,
                              incon_dengue_grave$SANGRAM != 1)
 #se tiver classificação 5 (descartado), sem exame 
-incon_dengue_descartado <- filter(dengue_ok,
-                                  dengue_ok$CLASSI_FIN == 5)
+incon_dengue_descartado <- filter(data_dengue_,
+                                  data_dengue_$CLASSI_FIN == 5)
 incon_dengue_descartado <- filter(incon_dengue_descartado,
                                   incon_dengue_descartado$RESUL_PCR_ != 2)
 incon_dengue_descartado <- filter(incon_dengue_descartado,
@@ -1296,8 +1289,8 @@ incon_dengue_descartado <- filter(incon_dengue_descartado,
 incon_dengue_descartado <- filter(incon_dengue_descartado,
                                   incon_dengue_descartado$RESUL_PRNT != 2)
 
-incon_chik_descartado <- filter(chikungunya_ok,
-                                chikungunya_ok$CLASSI_FIN == 5)
+incon_chik_descartado <- filter(data_chik_,
+                                data_chik_$CLASSI_FIN == 5)
 incon_chik_descartado <- filter(incon_chik_descartado,
                                 incon_chik_descartado$RESUL_PCR_ != 2)
 incon_chik_descartado <- filter(incon_chik_descartado,
@@ -1322,10 +1315,6 @@ incons_chik_obito <- filter(data_chik_confirmados,
 #inconsistências óbito zika
 incons_zika_obito <- filter(data_zika_confirmados,
                             data_zika_confirmados$EVOLUCAO == "3")
-
-#notificados sem a clínica e sem laboratorio 
-incon_dengue_sem_suspeita <- anti_join(data_dengue, dengue_ok, by = "NU_NOTIFIC")
-incon_chik_sem_suspeita <- anti_join(data_chik, chikungunya_ok, by = "NU_NOTIFIC")
 
 ############################### SUMÁRIO ########################################
 nm_dengue_provaveis <- filter(dengue_ok, 
@@ -1369,7 +1358,7 @@ export(list(SUMARIO = SUMARIO,
             dengue_obitos = data_dengue_obitos,
             chikungunya_obitos = data_chik_obitos,
             zika_obitos = data_zika_obitos),
-       file = "C:/Users/ADM/Dropbox/PC/Desktop/Scipts by_Silmara/Projeto_boletim_arbovirose/Para_boletim_arbovirose.xlsx")
+       file = "C:/Users/NDTA.Dses01213518/Desktop/Azul BE_limpo/Azul_dados limpos_para_boletim_arbo/Para_boletim_arbovirose.xlsx")
 ##saidas #nome da aba = #nome do objeto
 export(list(dengue_IS = data_dengue_menor_2007,
             chikungunya_IS = data_chik_menor_2016,
@@ -1388,5 +1377,5 @@ export(list(dengue_IS = data_dengue_menor_2007,
             dengue_obito = incons_dengue_obito,
             chik_obito = incons_chik_obito,
             zika_obito = incons_zika_obito),
-       file = "C:/Users/ADM/Dropbox/PC/Desktop/Scipts by_Silmara/Projeto_boletim_arbovirose/Inconsistências_arbovirose.xlsx")
-      #############FIM
+       file = "C:/Users/NDTA.Dses01213518/Desktop/Azul BE_limpo/Inconsistências/Inconsistências_arbovirose.xlsx")
+#############FIM
