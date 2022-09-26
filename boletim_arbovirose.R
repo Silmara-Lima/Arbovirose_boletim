@@ -10,6 +10,21 @@ library("purrr")
 library("rio")
 
 #posteriormente, verificar contagem por semana epidemiológica
+#se for para a fonte for banco de dados
+
+#bd_arbovirose <- dbDriver("PostgreSQL")
+
+#db <- "Nome do banco"
+#host_db <- "host" 
+#db_port <- "porta"
+#db_user <- "user"  
+#db_password <- "senha"
+#con <- dbConnect(RPostgres::Postgres(), dbname = db, host=host_db, 
+#                 port=db_port, user=db_user, password=db_password)
+#dbListTables(con) 
+#dengue_bd <- RPostgreSQL::dbGetQuery(conn = con,
+#                                    statement = "select * from \"nome_da_tabela\"")
+
 ############### DESCOMPACTAR ARQUIVOS ARBOVIROSE ###############################
 #abrir arquivos dengue
 getwd()
